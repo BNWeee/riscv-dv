@@ -296,7 +296,7 @@ def gen_csr_test_pass(test_file, end_addr):
 
 
 def gen_csr_instr(original_csr_map, csr_instructions, xlen,
-                  iterations, out, end_signature_addr):
+                  iterations, out, end_signature_addr, case_name):
     """
     Uses the information in the map produced by get_csr_map() to generate
     test CSR instructions operating on the generated random values.
@@ -320,8 +320,11 @@ def gen_csr_instr(original_csr_map, csr_instructions, xlen,
         source_reg, dest_reg = ["x{}".format(i) for i in
                                 random.sample(range(1, 16), 2)]
         csr_list = list(csr_map.keys())
-        with open("{}/riscv_csr_test_{}.S".format(out, i),
-                  "w") as csr_test_file:
+        if case_name is not None:
+            filename = "{}/riscv_csr_{}_test_{}.S".format(out, case_name, i)
+        else:
+            filename = "{}/riscv_csr_test_{}.S".format(out, i)
+        with open(filename,"w") as csr_test_file:
             gen_setup(csr_test_file)
             for csr in csr_list:
                 csr_address, csr_val, csr_write_fields, csr_read_mask = csr_map.get(
@@ -413,6 +416,8 @@ def main():
     parser.add_argument("--seed", type=int, default=None,
                         help="""Value used to seed the random number generator. If no value is passed in,
                   the RNG will be seeded from an internal source of randomness.""")
+    parser.add_argument("--name", type=str, default=None,
+                        help="Specify output testcase name")
     args = parser.parse_args()
 
     """All supported CSR operations"""
@@ -427,7 +432,7 @@ def main():
 
     gen_csr_instr(get_csr_map(args.csr_file, args.xlen),
                   csr_ops, args.xlen, args.iterations, args.out,
-                  args.end_signature_addr)
+                  args.end_signature_addr, args.name)
 
 
 if __name__ == "__main__":
