@@ -154,7 +154,7 @@ jobs:
         run: |
           echo "RISCV_GCC=riscv64-unknown-elf-gcc" >> $GITHUB_ENV
           echo "RISCV_OBJCOPY=riscv64-unknown-elf-objcopy" >> $GITHUB_ENV
-          echo "SPIKE_PATH=/opt/spike/bin" >> $GITHUB_ENV
+          echo "SPIKE_PATH=/nfs/share/opt/riscv-isa-sim/bin" >> $GITHUB_ENV
           echo "PYTHONPATH=pygen" >> $GITHUB_ENV
 
       - name: Cache Code Restore
