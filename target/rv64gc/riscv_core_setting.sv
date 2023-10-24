@@ -40,7 +40,7 @@ mtvec_mode_t supported_interrupt_mode[$] = {DIRECT, VECTORED};
 int max_interrupt_vector_num = 16;
 
 // Physical memory protection support
-bit support_pmp = 0;
+bit support_pmp = 1;
 
 // Enhanced physical memory protection support
 bit support_epmp = 0;
