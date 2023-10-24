@@ -58,13 +58,13 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
       // Machine Status Register
       MSTATUS: begin
         privil_level = M_LEVEL;
-        add_field("UIE",   1,  WARL);
-        add_field("SIE",   1,  WARL);
         add_field("WPRI0", 1,  WPRI);
-        add_field("MIE",   1,  WARL);
-        add_field("UPIE",  1,  WARL);
-        add_field("SPIE",  1,  WARL);
+        add_field("SIE",   1,  WARL);
         add_field("WPRI1", 1,  WPRI);
+        add_field("MIE",   1,  WARL);
+        add_field("WPRI2", 1,  WPRI);
+        add_field("SPIE",  1,  WARL);
+        add_field("UBE",   1,  WPRI);
         add_field("MPIE",  1,  WARL);
         add_field("SPP",   1,  WLRL);
         add_field("VS",    2,  WARL);
@@ -83,7 +83,9 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
           add_field("WPRI3", 9,  WPRI);
           add_field("UXL",   2,  WARL);
           add_field("SXL",   2,  WARL);
-          add_field("WPRI4", XLEN - 37, WPRI);
+          add_field("SBE",   2,  WARL);
+          add_field("MBE",   2,  WARL);
+          add_field("WPRI4", XLEN - 41, WPRI);
         end
         add_field("SD",   1,  WARL);
       end
@@ -117,19 +119,19 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
       // Machine Interrupt Delegation Register
       MIDELEG: begin
         privil_level = M_LEVEL;
-        add_field("USIP", 1, WARL);
-        add_field("SSIP", 1, WARL);
         add_field("WARL0", 1, WARL);
-        add_field("MSIP", 1, WARL);
-        add_field("UTIP", 1, WARL);
-        add_field("STIP", 1, WARL);
+        add_field("SSIP", 1, WARL);
         add_field("WARL1", 1, WARL);
-        add_field("MTIP", 1, WARL);
-        add_field("UEIP", 1, WARL);
-        add_field("SEIP", 1, WARL);
+        add_field("MSIP", 1, WARL);
         add_field("WARL2", 1, WARL);
+        add_field("STIP", 1, WARL);
+        add_field("WARL3", 1, WARL);
+        add_field("MTIP", 1, WARL);
+        add_field("WARL4", 1, WARL);
+        add_field("SEIP", 1, WARL);
+        add_field("WARL5", 1, WARL);
         add_field("MEIP", 1, WARL);
-        add_field("WARL3", XLEN-12, WARL);
+        add_field("WARL6", XLEN-12, WARL);
       end
       // Machine trap-enable register
       MIP: begin
