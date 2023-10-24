@@ -913,12 +913,12 @@
     - field_name: MSIP
       description: >
         Machine-mode software interrupt
-      type: WARL
+      type: R
       reset_val: 0x0
       msb: 3
       lsb: 3
       warl_legalize: |
-        val_out = (val_in & 0x1) | 0x1
+        val_out = (val_in & 0x0) | 0x0
     - field_name: WARL2
       description: >
         Reserved [4]
@@ -949,12 +949,12 @@
     - field_name: MTIP
       description: >
         Machine-mode timer interrupt
-      type: WARL
+      type: R
       reset_val: 0x0
       msb: 7
       lsb: 7
       warl_legalize: |
-        val_out = (val_in & 0x1) | 0x1
+        val_out = (val_in & 0x0) | 0x0
     - field_name: WARL4
       description: >
         Reserved [8]
@@ -985,12 +985,12 @@
     - field_name: MEIP
       description: >
         Supervisor-mode external interrupt
-      type: WARL
+      type: R
       reset_val: 0x0
       msb: 11
       lsb: 11
       warl_legalize: |
-        val_out = (val_in & 0x1) | 0x1
+        val_out = (val_in & 0x0) | 0x0
     - field_name: WARL6
       description: >
         Reserved [31:12]
@@ -1031,12 +1031,12 @@
     - field_name: MSIP
       description: >
         Machine-mode software interrupt
-      type: WARL
+      type: R
       reset_val: 0x0
       msb: 3
       lsb: 3
       warl_legalize: |
-        val_out = (val_in & 0x1) | 0x1
+        val_out = (val_in & 0x0) | 0x0
     - field_name: WARL2
       description: >
         Reserved [4]
@@ -1067,12 +1067,12 @@
     - field_name: MTIP
       description: >
         Machine-mode timer interrupt
-      type: WARL
+      type: R
       reset_val: 0x0
       msb: 7
       lsb: 7
       warl_legalize: |
-        val_out = (val_in & 0x1) | 0x1
+        val_out = (val_in & 0x0) | 0x0
     - field_name: WARL4
       description: >
         Reserved [8]
@@ -1103,12 +1103,12 @@
     - field_name: MEIP
       description: >
         Machine-mode external interrupt
-      type: WARL
+      type: R
       reset_val: 0x0
       msb: 11
       lsb: 11
       warl_legalize: |
-        val_out = (val_in & 0x1) | 0x1
+        val_out = (val_in & 0x0) | 0x0
     - field_name: WARL6
       description: >
         Reserved [63:12]
