@@ -1655,7 +1655,7 @@
   address: 0x306
   privilege_mode: M
   rv32:
-    - field_name: CY
+    - field_name: cy
       description: >
         mcycle access enable
       type: WARL
@@ -1664,7 +1664,7 @@
       lsb: 0
       warl_legalize: |
         val_out = val_in & 0x1
-    - field_name: TM
+    - field_name: tm
       description: >
         mtime access enable
       type: WARL
@@ -1673,7 +1673,7 @@
       lsb: 1
       warl_legalize: |
         val_out = val_in & 0x1
-    - field_name: IR
+    - field_name: ir
       description: >
         minstret access enable
       type: WARL
@@ -1682,7 +1682,7 @@
       lsb: 2
       warl_legalize: |
         val_out = val_in & 0x1
-    - field_name: HPM
+    - field_name: hpm
       description: >
         hardware performance-monitoring counter access enable
       type: R
@@ -1692,7 +1692,7 @@
       warl_legalize: |
         val_out = val_in & 0x0
   rv64:
-    - field_name: CY
+    - field_name: cy
       description: >
         mcycle access enable
       type: WARL
@@ -1701,7 +1701,7 @@
       lsb: 0
       warl_legalize: |
         val_out = val_in & 0x1
-    - field_name: TM
+    - field_name: tm
       description: >
         mtime access enable
       type: WARL
@@ -1710,7 +1710,7 @@
       lsb: 1
       warl_legalize: |
         val_out = val_in & 0x1
-    - field_name: IR
+    - field_name: ir
       description: >
         minstret access enable
       type: WARL
@@ -1719,7 +1719,7 @@
       lsb: 2
       warl_legalize: |
         val_out = val_in & 0x1
-    - field_name: HPM
+    - field_name: hpm
       description: >
         hardware performance-monitoring counter access enable
       type: R
@@ -1736,7 +1736,7 @@
   address: 0x340
   privilege_mode: M
   rv32:
-    - field_name: WARLTest
+    - field_name: SCRATCH
       description: >
         save a pointer whitch point to m mode hart loack context
       type: WARL
@@ -1746,7 +1746,7 @@
       warl_legalize: |
         val_out = val_in & 0xFFFFFFFF
   rv64:
-    - field_name: WARLTest
+    - field_name: scrach
       description: >
         save a pointer whitch point to m mode hart loack context
       type: WARL
@@ -1755,6 +1755,102 @@
       lsb: 0
       warl_legalize: |
         val_out = val_in & 0xFFFFFFFFFFFFFFFF
+
+- csr: mepc
+  description: >
+    Machine exception program counter register
+  address: 0x341
+  privilege_mode: M
+  rv32:
+    - field_name: epc
+      description: >
+        Machine exception program counter
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFE
+  rv64:
+    - field_name: epc
+      description: >
+        Machine exception program counter
+      type: WARL
+      reset_val: 0x0
+      msb: 63
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFFFFFFFFFE
+
+- csr: mcause
+  description: >
+    Machine exception cause register
+  address: 0x342
+  privilege_mode: M
+  rv32:
+    - field_name: cause
+      description: >
+        trap cause number
+      type: WARL
+      reset_val: 0x0
+      msb: 30
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x7FFFFFFF
+    - field_name: interrupt
+      description: >
+        represent trap is interrupt or exception
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 31
+      warl_legalize: |
+        val_out = val_in & 0x1
+  rv64:
+    - field_name: cause
+      description: >
+        trap cause number
+      type: WARL
+      reset_val: 0x0
+      msb: 62
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x7FFFFFFFFFFFFFFF
+    - field_name: interrupt
+      description: >
+        represent trap is interrupt or exception
+      type: WARL
+      reset_val: 0x0
+      msb: 63
+      lsb: 63
+      warl_legalize: |
+        val_out = val_in & 0x1
+
+- csr: mtval
+  description: >
+    Machine trap value register
+  address: 0x343
+  privilege_mode: M
+  rv32:
+    - field_name: WARLTest
+      description: >
+        exception address
+      type: WARL
+      reset_val: 0xf
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFF
+  rv64:
+    - field_name: WARLTest
+      description: >
+        exception address
+      type: WARL
+      reset_val: 0xf
+      msb: 63
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFF
 
 # - csr: mwarlexample
 #   description: >
@@ -1776,11 +1872,5 @@
 #         if bottom_half != 0x000f and bottom_half != 0xf000:
 #           bottom_half = val_orig & 0xffff
 #         val_out = (val_in & 0xffff0000) | bottom_half
-
-
-# - mscratch 340
-# - mepc 341
-# - mcause 342
-# - mtval 343
 
 
