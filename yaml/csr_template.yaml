@@ -1730,6 +1730,32 @@
         val_out = val_in & 0x0
 
 
+- csr: mscratch
+  description: >
+    Machine scracth register
+  address: 0x340
+  privilege_mode: M
+  rv32:
+    - field_name: WARLTest
+      description: >
+        save a pointer whitch point to m mode hart loack context
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFF
+  rv64:
+    - field_name: WARLTest
+      description: >
+        save a pointer whitch point to m mode hart loack context
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFFFFFFFFFF
+
 # - csr: mwarlexample
 #   description: >
 #     Example of WARL field
