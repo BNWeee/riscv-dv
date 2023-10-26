@@ -800,14 +800,6 @@ class riscv_instr_category_t(IntEnum):
 
 class privileged_reg_t(IntEnum):
     # User mode register
-    USTATUS = 0x000  # User status
-    UIE = 0x004  # User interrupt-enable register
-    UTVEC = 0x005  # User trap-handler base address
-    USCRATCH = 0x040  # Scratch register for user trap handlers
-    UEPC = 0x041  # User exception program counter
-    UCAUSE = 0x042  # User trap cause
-    UTVAL = 0x043  # User bad address or instruction
-    UIP = 0x044  # User interrupt pending
     FFLAGS = 0x001  # Floating-Point Accrued Exceptions
     FRM = 0x002  # Floating-Point Dynamic Rounding Mode
     FCSR = 0x003  # Floating-Point Control/Status Register (FRM + FFLAGS)
@@ -877,8 +869,6 @@ class privileged_reg_t(IntEnum):
     HPMCOUNTER31H = 0xC9F  # Upper 32 bits of HPMCOUNTER31, RV32I only
     # Supervisor mode register
     SSTATUS = 0x100  # Supervisor status
-    SEDELEG = 0x102  # Supervisor exception delegation register
-    SIDELEG = 0x103  # Supervisor interrupt delegation register
     SIE = 0x104  # Supervisor interrupt-enable register
     STVEC = 0x105  # Supervisor trap-handler base address
     SCOUNTEREN = 0x106  # Supervisor counter enable

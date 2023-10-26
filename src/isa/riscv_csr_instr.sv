@@ -103,8 +103,6 @@ class riscv_csr_instr extends riscv_instr;
         include_reg = {MSCRATCH};
       end else if (cfg.init_privileged_mode == SUPERVISOR_MODE) begin
         include_reg = {SSCRATCH};
-      end else begin
-        include_reg = {USCRATCH};
       end
     end
   endfunction : create_csr_filter

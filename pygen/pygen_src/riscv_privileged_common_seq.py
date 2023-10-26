@@ -42,8 +42,6 @@ class riscv_privileged_common_seq():
         self.setup_mmode_reg(mode, regs)
         if mode == privileged_mode_t.SUPERVISOR_MODE:
             self.setup_smode_reg(mode, regs)
-        if mode == privileged_mode_t.USER_MODE:
-            self.setup_umode_reg(mode, regs)
         if cfg.virtual_addr_translation_on:
             self.setup_satp(instrs)
         self.gen_csr_instr(regs, instrs)
@@ -65,16 +63,6 @@ class riscv_privileged_common_seq():
         self.sstatus.randomize()
         self.sstatus_set_field(mode, regs)
         self.sie_set_field(mode, regs)
-
-    def setup_umode_reg(self, mode, regs):
-        # For implementations that do not provide any U-mode CSRs, return immediately
-        if not rcs.support_umode_trap:
-            return
-        self.ustatus = riscv_privil_reg()
-        self.ustatus.init_reg(privileged_reg_t.USTATUS)
-        self.ustatus.randomize()
-        self.ustatus_set_field(mode, regs)
-        self.uie_set_field(mode, regs)
 
     def gen_csr_instr(self, regs, instrs):
         for i in range(len(regs)):
@@ -125,7 +113,6 @@ class riscv_privileged_common_seq():
             self.mstatus.set_field("UXL", 2)
         self.mstatus.set_field("XS", 0)
         self.mstatus.set_field("SD", 0)
-        self.mstatus.set_field("UIE", 0)
         # Set the previous privileged mode as the target mode
         self.mstatus.set_field("MPP", mode.value)
         self.mstatus.set_field("SPP", 0)
@@ -134,8 +121,6 @@ class riscv_privileged_common_seq():
         self.mstatus.set_field("MIE", cfg.enable_interrupt)
         self.mstatus.set_field("SPIE", cfg.enable_interrupt)
         self.mstatus.set_field("SIE", cfg.enable_interrupt)
-        self.mstatus.set_field("UPIE", cfg.enable_interrupt)
-        self.mstatus.set_field("UIE", rcs.support_umode_trap)
         logging.info("self.mstatus_val: {}".format(hex(self.mstatus.get_val())))
         regs.append(self.mstatus)
 
@@ -144,23 +129,13 @@ class riscv_privileged_common_seq():
             self.sstatus.set_val(cfg.sstatus)
         self.sstatus.set_field("SPIE", cfg.enable_interrupt)
         self.sstatus.set_field("SIE", cfg.enable_interrupt)
-        self.sstatus.set_field("UPIE", cfg.enable_interrupt)
-        self.sstatus.set_field("UIE", rcs.support_umode_trap)
         if rcs.XLEN == 64:
             self.sstatus.set_field("UXL", 2)
         self.sstatus.set_field("FS", cfg.mstatus_fs)
         self.sstatus.set_field("XS", 0)
         self.sstatus.set_field("SD", 0)
-        self.sstatus.set_field("UIE", 0)
         self.sstatus.set_field("SPP", 0)
         regs.append(self.sstatus)
-
-    def ustatus_set_field(self, mode, regs):
-        if cfg.randomize_csr:
-            self.ustatus.set_val(cfg.ustatus)
-        self.ustatus.set_field("UIE", cfg.enable_interrupt)
-        self.ustatus.set_field("UPIE", cfg.enable_interrupt)
-        regs.append(self.ustatus)
 
     def mie_set_field(self, mode, regs):
         # Enable external and timer interrupt
@@ -169,15 +144,12 @@ class riscv_privileged_common_seq():
             self.mie.init_reg(privileged_reg_t.MIE)
             if cfg.randomize_csr:
                 self.mie.set_val(cfg.mie)
-            self.mie.set_field("UEIE", cfg.enable_interrupt)
             self.mie.set_field("SEIE", cfg.enable_interrupt)
             self.mie.set_field("MEIE", cfg.enable_interrupt)
-            self.mie.set_field("USIE", cfg.enable_interrupt)
             self.mie.set_field("SSIE", cfg.enable_interrupt)
             self.mie.set_field("MSIE", cfg.enable_interrupt)
             self.mie.set_field("MTIE", cfg.enable_interrupt & cfg.enable_timer_irq)
             self.mie.set_field("STIE", cfg.enable_interrupt & cfg.enable_timer_irq)
-            self.mie.set_field("UTIE", cfg.enable_interrupt & cfg.enable_timer_irq)
             regs.append(self.mie)
 
     def sie_set_field(self, mode, regs):
@@ -187,21 +159,7 @@ class riscv_privileged_common_seq():
             self.sie.init_reg(privileged_reg_t.SIE)
             if cfg.randomize_csr:
                 self.sie.set_val(cfg.sie)
-            self.sie.set_field("UEIE", cfg.enable_interrupt)
             self.sie.set_field("SEIE", cfg.enable_interrupt)
-            self.sie.set_field("USIE", cfg.enable_interrupt)
             self.sie.set_field("SSIE", cfg.enable_interrupt)
             self.sie.set_field("STIE", cfg.enable_interrupt & cfg.enable_timer_irq)
-            self.sie.set_field("UTIE", cfg.enable_interrupt & cfg.enable_timer_irq)
             regs.append(self.sie)
-
-    def uie_set_field(self, mode, regs):
-        if privileged_reg_t.UIE in rcs.implemented_csr:
-            self.uie = riscv_privil_reg()
-            self.uie.init_reg(privileged_reg_t.UIE)
-            if cfg.randomize_csr:
-                self.uie.set_val(cfg.uie)
-            self.uie.set_field("UEIE", cfg.enable_interrupt)
-            self.uie.set_field("USIE", cfg.enable_interrupt)
-            self.uie.set_field("UTIE", cfg.enable_interrupt & cfg.enable_timer_irq)
-            regs.append(self.uie)

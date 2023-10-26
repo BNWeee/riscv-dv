@@ -31,13 +31,13 @@ class riscv_privil_reg(riscv_reg):
         # Machine status Register
         if reg_name == privileged_reg_t.MSTATUS:
             self.privil_level = privileged_level_t.M_LEVEL
-            self.add_field("UIE", 1, reg_field_access_t.WARL)
-            self.add_field("SIE", 1, reg_field_access_t.WARL)
             self.add_field("WPRI0", 1, reg_field_access_t.WPRI)
-            self.add_field("MIE", 1, reg_field_access_t.WARL)
-            self.add_field("UPIE", 1, reg_field_access_t.WARL)
-            self.add_field("SPIE", 1, reg_field_access_t.WARL)
+            self.add_field("SIE", 1, reg_field_access_t.WARL)
             self.add_field("WPRI1", 1, reg_field_access_t.WPRI)
+            self.add_field("MIE", 1, reg_field_access_t.WARL)
+            self.add_field("WPRI2", 1, reg_field_access_t.WPRI)
+            self.add_field("SPIE", 1, reg_field_access_t.WARL)
+            self.add_field("UBE", 1, reg_field_access_t.WARL)
             self.add_field("MPIE", 1, reg_field_access_t.WARL)
             self.add_field("SPP", 1, reg_field_access_t.WLRL)
             self.add_field("VS", 2, reg_field_access_t.WARL)
@@ -56,7 +56,7 @@ class riscv_privil_reg(riscv_reg):
                 self.add_field("WPRI3", 9, reg_field_access_t.WPRI)
                 self.add_field("UXL", 2, reg_field_access_t.WARL)
                 self.add_field("SXL", 2, reg_field_access_t.WARL)
-                self.add_field("WPRI4", rcs.XLEN - 37, reg_field_access_t.WPRI)
+                self.add_field("WPRI4", rcs.XLEN - 39, reg_field_access_t.WPRI)
             self.add_field("SD", 1, reg_field_access_t.WARL)
         # Machine interrupt-enable register
         elif reg_name == privileged_reg_t.MIE:

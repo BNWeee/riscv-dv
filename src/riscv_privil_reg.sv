@@ -64,7 +64,7 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
         add_field("MIE",   1,  WARL);
         add_field("WPRI2", 1,  WPRI);
         add_field("SPIE",  1,  WARL);
-        add_field("UBE",   1,  WPRI);
+        add_field("UBE",   1,  WARL);
         add_field("MPIE",  1,  WARL);
         add_field("SPP",   1,  WLRL);
         add_field("VS",    2,  WARL);
@@ -83,9 +83,9 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
           add_field("WPRI3", 9,  WPRI);
           add_field("UXL",   2,  WARL);
           add_field("SXL",   2,  WARL);
-          add_field("SBE",   2,  WARL);
-          add_field("MBE",   2,  WARL);
-          add_field("WPRI4", XLEN - 41, WPRI);
+          add_field("SBE",   1,  WARL);
+          add_field("MBE",   1,  WARL);
+          add_field("WPRI4", XLEN - 39, WPRI);
         end
         add_field("SD",   1,  WARL);
       end
@@ -136,36 +136,36 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
       // Machine trap-enable register
       MIP: begin
         privil_level = M_LEVEL;
-        add_field("USIP",   1,  WARL);
-        add_field("SSIP",   1,  WARL);
         add_field("WPRI0",  1,  WPRI);
-        add_field("MSIP",   1,  WARL);
-        add_field("UTIP",   1,  WARL);
-        add_field("STIP",   1,  WARL);
+        add_field("SSIP",   1,  WARL);
         add_field("WPRI1",  1,  WPRI);
-        add_field("MTIP",   1,  WARL);
-        add_field("UEIP",   1,  WARL);
-        add_field("SEIP",   1,  WARL);
+        add_field("MSIP",   1,  WARL);
         add_field("WPRI2",  1,  WPRI);
+        add_field("STIP",   1,  WARL);
+        add_field("WPRI3",  1,  WPRI);
+        add_field("MTIP",   1,  WARL);
+        add_field("WPRI4",  1,  WPRI);
+        add_field("SEIP",   1,  WARL);
+        add_field("WPRI5",  1,  WPRI);
         add_field("MEIP",   1,  WARL);
-        add_field("WPRI3",  XLEN - 12,  WPRI);
+        add_field("WPRI6",  XLEN - 12,  WPRI);
       end
       // Machine interrupt-enable register
       MIE: begin
         privil_level = M_LEVEL;
-        add_field("USIE",   1,  WARL);
-        add_field("SSIE",   1,  WARL);
         add_field("WPRI0",  1,  WPRI);
-        add_field("MSIE",   1,  WARL);
-        add_field("UTIE",   1,  WARL);
-        add_field("STIE",   1,  WARL);
+        add_field("SSIE",   1,  WARL);
         add_field("WPRI1",  1,  WPRI);
-        add_field("MTIE",   1,  WARL);
-        add_field("UEIE",   1,  WARL);
-        add_field("SEIE",   1,  WARL);
+        add_field("MSIE",   1,  WARL);
         add_field("WPRI2",  1,  WPRI);
+        add_field("STIE",   1,  WARL);
+        add_field("WPRI3",  1,  WPRI);
+        add_field("MTIE",   1,  WARL);
+        add_field("WPRI4",  1,  WPRI);
+        add_field("SEIE",   1,  WARL);
+        add_field("WPRI5",  1,  WPRI);
         add_field("MEIE",   1,  WARL);
-        add_field("WPRI3",  XLEN - 12,  WPRI);
+        add_field("WPRI6",  XLEN - 12,  WPRI);
       end
       // Cycle Count Register
       MCYCLE: begin
@@ -345,17 +345,18 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
       // Supervisor status register
       SSTATUS: begin
         privil_level = S_LEVEL;
-        add_field("UIE",   1,  WARL);
+        add_field("WPRI0", 1,  WPRI);
         add_field("SIE",   1,  WARL);
-        add_field("WPRI0", 2,  WPRI);
-        add_field("UPIE",  1,  WARL);
+        add_field("WPRI1", 3,  WPRI);
         add_field("SPIE",  1,  WARL);
-        add_field("WPRI1", 2,  WPRI);
+        add_field("UBE",   1,  WARL);
+        add_field("WPRI2", 1,  WPRI);
         add_field("SPP",   1,  WLRL);
-        add_field("WPRI2", 4,  WPRI);
+        add_field("VS",    2,  WARL);
+        add_field("WPRI3", 2,  WPRI);
         add_field("FS",    2,  WARL);
         add_field("XS",    2,  WARL);
-        add_field("WPRI3", 1,  WPRI);
+        add_field("WPRI4", 1,  WPRI);
         add_field("SUM",   1,  WARL);
         add_field("MXR",   1,  WARL);
         if(XLEN == 32) begin
@@ -373,68 +374,25 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
         add_field("MODE", 2, WARL);
         add_field("BASE", XLEN-2, WLRL);
       end
-      // Supervisor Exception Delegation Register
-      SEDELEG: begin
-        privil_level = S_LEVEL;
-        add_field("IAM", 1, WARL);
-        add_field("IAF", 1, WARL);
-        add_field("II", 1, WARL);
-        add_field("WPRI0", 1, WPRI);
-        add_field("LAM", 1, WARL);
-        add_field("LAF", 1, WARL);
-        add_field("SAM", 1, WARL);
-        add_field("SAF", 1, WARL);
-        add_field("ECFU", 1, WARL);
-        add_field("WPRI1", 1, WPRI);
-        add_field("WARL0", 1, WARL);
-        add_field("WPRI2", 1, WPRI);
-        add_field("IPF", 1, WARL);
-        add_field("LPF", 1, WARL);
-        add_field("WARL1", 1, WARL);
-        add_field("SPF", 1, WARL);
-        add_field("WARL2", XLEN-16, WARL);
-      end
-      // Supervisor Interrupt Delegation Register
-      SIDELEG: begin
-        privil_level = S_LEVEL;
-        add_field("USIP", 1, WARL);
-        add_field("SSIP", 1, WARL);
-        add_field("WARL0", 1, WARL);
-        add_field("WPRI0", 1, WPRI);
-        add_field("UTIP", 1, WARL);
-        add_field("STIP", 1, WARL);
-        add_field("WARL1", 1, WARL);
-        add_field("WPRI1", 1, WPRI);
-        add_field("UEIP", 1, WARL);
-        add_field("SEIP", 1, WARL);
-        add_field("WARL2", 1, WARL);
-        add_field("WPRI2", 1, WPRI);
-        add_field("WARL3", XLEN-12, WARL);
-      end
       // Supervisor trap-enable register
       SIP: begin
         privil_level = S_LEVEL;
-        add_field("USIP",   1,  WARL);
+        add_field("WPRI0",  1,  WPRI);
         add_field("SSIP",   1,  WARL);
-        add_field("WPRI0",  2,  WPRI);
-        add_field("UTIP",   1,  WARL);
+        add_field("WPRI1",  3,  WPRI);
         add_field("STIP",   1,  WARL);
-        add_field("WPRI1",  2,  WPRI);
-        add_field("UEIP",   1,  WARL);
+        add_field("WPRI2",  3,  WPRI);
         add_field("SEIP",   1,  WARL);
-        add_field("WPRI2", 2, WPRI);
-        add_field("WPRI3",  XLEN - 12,  WPRI);
+        add_field("WPRI2",  XLEN - 10,  WPRI);
       end
       // Supervisor interrupt-enable register
       SIE: begin
         privil_level = S_LEVEL;
-        add_field("USIE",   1,  WARL);
+        add_field("WPRI0",  1,  WPRI);
         add_field("SSIE",   1,  WARL);
-        add_field("WPRI0",  2,  WPRI);
-        add_field("UTIE",   1,  WARL);
+        add_field("WPRI1",  3,  WPRI);
         add_field("STIE",   1,  WARL);
-        add_field("WPRI1",  2,  WPRI);
-        add_field("UEIE",   1,  WARL);
+        add_field("WPRI2",  3,  WPRI);
         add_field("SEIE",   1,  WARL);
         add_field("WPRI2",  XLEN - 10,  WPRI);
       end
@@ -511,63 +469,6 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
           add_field("ASID", 16, WARL);
           add_field("MODE", 4,  WARL);
         end
-      end
-      /////////////// User mode reigster //////////////
-      // User Status Register
-      USTATUS: begin
-        privil_level = U_LEVEL;
-        add_field("UIE", 1, WARL);
-        add_field("WPRI0", 3, WPRI);
-        add_field("UPIE", 1, WARL);
-        add_field("WPRI1", XLEN-5, WPRI);
-      end
-      // User Trap Vector Base Address Register
-      UTVEC: begin
-        privil_level = U_LEVEL;
-        add_field("MODE", 2, WARL);
-        add_field("BASE", XLEN-2, WLRL);
-      end
-      // User Interrupt-Enable register
-      UIE: begin
-        privil_level = U_LEVEL;
-        add_field("USIE", 1, WARL);
-        add_field("WPRI0", 3, WPRI);
-        add_field("UTIE", 1, WARL);
-        add_field("WPRI1", 3, WPRI);
-        add_field("UEIE", 1, WARL);
-        add_field("WPRI2", XLEN-9, WPRI);
-      end
-      // User Trap-Enable register
-      UIP: begin
-        privil_level = U_LEVEL;
-        add_field("USIP", 1, WARL);
-        add_field("WPRI0", 3, WPRI);
-        add_field("UTIP", 1, WARL);
-        add_field("WPRI1", 3, WPRI);
-        add_field("UEIP", 1, WARL);
-        add_field("WPRI2", XLEN-9, WPRI);
-      end
-      // User Scratch Register
-      USCRATCH: begin
-        privil_level = U_LEVEL;
-        add_field("MSCRATCH", XLEN, WARL);
-      end
-      // User Exception Program Counter
-      UEPC: begin
-        privil_level = U_LEVEL;
-        add_field("BASE",  XLEN,  WARL);
-      end
-      // User Cause Register
-      UCAUSE: begin
-        privil_level = U_LEVEL;
-        add_field("CODE",  4,  WLRL);
-        add_field("WLRL", XLEN-5, WLRL);
-        add_field("INTERRUPT",  1,  WARL);
-      end
-      // User Trap Value
-      UTVAL: begin
-        privil_level = U_LEVEL;
-        add_field("VALUE",  XLEN,  WARL);
       end
       default:
         `uvm_fatal(get_full_name(), $sformatf("reg %0s is not supported yet", reg_name.name()))

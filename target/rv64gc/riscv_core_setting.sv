@@ -100,19 +100,8 @@ privileged_reg_t implemented_csr[] = {
 `else
 const privileged_reg_t implemented_csr[] = {
 `endif
-    // User mode CSR
-    USTATUS,    // User status
-    UIE,        // User interrupt-enable register
-    UTVEC,      // User trap-handler base address
-    USCRATCH,   // Scratch register for user trap handlers
-    UEPC,       // User exception program counter
-    UCAUSE,     // User trap cause
-    UTVAL,      // User bad address or instruction
-    UIP,        // User interrupt pending
     // Supervisor mode CSR
     SSTATUS,    // Supervisor status
-    SEDELEG,    // Supervisor exception delegation register
-    SIDELEG,    // Supervisor interrupt delegation register
     SIE,        // Supervisor interrupt-enable register
     STVEC,      // Supervisor trap-handler base address
     SCOUNTEREN, // Supervisor counter enable

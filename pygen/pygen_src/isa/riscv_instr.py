@@ -218,8 +218,6 @@ class riscv_instr:
                 cls.include_reg.append("MSCRATCH")
             elif cfg.init_privileged_mode == "SUPERVISOR_MODE":  # Supervisor Mode
                 cls.include_reg.append("SSCRATCH")
-            else:                                               # User Mode
-                cls.include_reg.append("USCRATCH")
 
     @classmethod
     def get_rand_instr(cls, include_instr=[], exclude_instr=[],

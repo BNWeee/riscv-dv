@@ -198,7 +198,9 @@ class riscv_asm_program_gen extends uvm_object;
     gen_all_trap_handler(hart);
     // Interrupt handling subroutine
     foreach(riscv_instr_pkg::supported_privileged_mode[i]) begin
-      gen_interrupt_handler_section(riscv_instr_pkg::supported_privileged_mode[i], hart);
+      if (riscv_instr_pkg::supported_privileged_mode[i] != USER_MODE) begin // deleted umode trap setting
+        gen_interrupt_handler_section(riscv_instr_pkg::supported_privileged_mode[i], hart);
+      end
     end
     instr_stream.push_back(get_label("kernel_instr_end: nop", hart));
     // User stack and data pages may not be accessible when executing trap handling programs in
@@ -466,6 +468,10 @@ class riscv_asm_program_gen extends uvm_object;
     if (SUPERVISOR_MODE inside {supported_privileged_mode}) begin
       misa[MISA_EXT_S] = 1'b1;
     end
+    if (USER_MODE inside {supported_privileged_mode}) begin
+      misa[MISA_EXT_U] = 1'b1;
+    end
+
     instr_stream.push_back({indent, $sformatf("li x%0d, 0x%0x", cfg.gpr[0], misa)});
     instr_stream.push_back({indent, $sformatf("csrw 0x%0x, x%0d", MISA, cfg.gpr[0])});
   endfunction
@@ -504,13 +510,7 @@ class riscv_asm_program_gen extends uvm_object;
           instr.push_back($sformatf("csrw 0x%0x, x%0d", SIE, cfg.gpr[1]));
         end
         USER_MODE: begin
-          if (!riscv_instr_pkg::support_umode_trap) begin
-            return;
-          end
-          instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], USTATUS));
-          instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[1], UIE));
-          instr.push_back($sformatf("csrw 0x%0x, x%0d", USTATUS, cfg.gpr[0]));
-          instr.push_back($sformatf("csrw 0x%0x, x%0d", UIE, cfg.gpr[1]));
+          return;
         end
         default: begin
           `uvm_fatal(`gfn, "Unsupported boot mode")
@@ -789,11 +789,7 @@ class riscv_asm_program_gen extends uvm_object;
             gen_signature_handshake(.instr(csr_handshake), .signature_type(WRITE_CSR),
                                     .csr(SIE));
           end
-          USER_MODE: begin
-            gen_signature_handshake(.instr(csr_handshake), .signature_type(WRITE_CSR),
-                                    .csr(USTATUS));
-            gen_signature_handshake(.instr(csr_handshake), .signature_type(WRITE_CSR), .csr(UIE));
-          end
+          USER_MODE: ;
           default: `uvm_info(`gfn, $sformatf("Unsupported privileged_mode %0s",
                                    riscv_instr_pkg::supported_privileged_mode[i]), UVM_LOW)
         endcase
@@ -880,11 +876,6 @@ class riscv_asm_program_gen extends uvm_object;
     gen_delegation_instr(hart, MEDELEG, MIDELEG,
                          cfg.m_mode_exception_delegation,
                          cfg.m_mode_interrupt_delegation);
-    if(riscv_instr_pkg::support_umode_trap) begin
-      gen_delegation_instr(hart, SEDELEG, SIDELEG,
-                           cfg.s_mode_exception_delegation,
-                           cfg.s_mode_interrupt_delegation);
-    end
   endfunction
 
   virtual function void gen_delegation_instr(int hart,
@@ -918,7 +909,7 @@ class riscv_asm_program_gen extends uvm_object;
     gen_section(get_label($sformatf("%0s_setup", section_name), hart), instr);
   endfunction
 
-  // Setup trap vector - MTVEC, STVEC, UTVEC
+  // Setup trap vector - MTVEC, STVEC
   virtual function void trap_vector_init(int hart);
     string instr[];
     privileged_reg_t trap_vec_reg;
@@ -927,13 +918,10 @@ class riscv_asm_program_gen extends uvm_object;
       case(riscv_instr_pkg::supported_privileged_mode[i])
         MACHINE_MODE:    trap_vec_reg = MTVEC;
         SUPERVISOR_MODE: trap_vec_reg = STVEC;
-        USER_MODE:       trap_vec_reg = UTVEC;
+        USER_MODE:       continue;
         default: `uvm_info(`gfn, $sformatf("Unsupported privileged_mode %0s",
                            riscv_instr_pkg::supported_privileged_mode[i]), UVM_LOW)
       endcase
-      // Skip utvec init if trap delegation to u_mode is not supported
-      if ((riscv_instr_pkg::supported_privileged_mode[i] == USER_MODE) &&
-          !riscv_instr_pkg::support_umode_trap) continue;
       if (riscv_instr_pkg::supported_privileged_mode[i] < cfg.init_privileged_mode) continue;
       tvec_name = trap_vec_reg.name();
       instr = {instr, $sformatf("la x%0d, %0s%0s_handler",
@@ -998,11 +986,7 @@ class riscv_asm_program_gen extends uvm_object;
         SUPERVISOR_MODE:
           gen_trap_handler_section(hart, "s", SCAUSE, STVEC, STVAL,
                                    SEPC, SSCRATCH, SSTATUS, SIE, SIP);
-        USER_MODE:
-          if(riscv_instr_pkg::support_umode_trap) begin
-            gen_trap_handler_section(hart, "u", UCAUSE, UTVEC, UTVAL,
-                                     UEPC, USCRATCH, USTATUS, UIE, UIP);
-          end
+        USER_MODE: ;
         default: `uvm_fatal(`gfn, $sformatf("Unsupported privileged_mode %0s",
                             riscv_instr_pkg::supported_privileged_mode[i]))
       endcase
@@ -1339,13 +1323,6 @@ class riscv_asm_program_gen extends uvm_object;
         ie = SIE;
         scratch = SSCRATCH;
       end
-      USER_MODE: begin
-        mode_prefix = "u";
-        status = USTATUS;
-        ip = UIP;
-        ie = UIE;
-        scratch = USCRATCH;
-      end
       default: `uvm_fatal(get_full_name(), $sformatf("Unsupported mode: %0s", mode.name()))
     endcase
       // If nested interrupts are enabled, set xSTATUS.xIE in the interrupt handler
@@ -1360,9 +1337,6 @@ class riscv_asm_program_gen extends uvm_object;
           end
           SSTATUS: begin
             interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 2));
-          end
-          USTATUS: begin
-            interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 1));
           end
           default: `uvm_fatal(`gfn, $sformatf("Unsupported status %0s", status))
         endcase

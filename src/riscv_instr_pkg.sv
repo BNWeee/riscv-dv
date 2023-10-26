@@ -747,15 +747,6 @@ package riscv_instr_pkg;
   typedef bit [11:0] riscv_csr_t;
 
   typedef enum bit [11:0] {
-    // User mode register
-    USTATUS         = 'h000,  // User status
-    UIE             = 'h004,  // User interrupt-enable register
-    UTVEC           = 'h005,  // User trap-handler base address
-    USCRATCH        = 'h040,  // Scratch register for user trap handlers
-    UEPC            = 'h041,  // User exception program counter
-    UCAUSE          = 'h042,  // User trap cause
-    UTVAL           = 'h043,  // User bad address or instruction
-    UIP             = 'h044,  // User interrupt pending
     // Unprivileged Floating-Point CSRs
     FFLAGS          = 'h001,  // Floating-Point Accrued Exceptions
     FRM             = 'h002,  // Floating-Point Dynamic Rounding Mode
@@ -828,8 +819,6 @@ package riscv_instr_pkg;
     // Supervisor mode register
     // Supervisor Trap Setup
     SSTATUS         = 'h100,  // Supervisor status
-    SEDELEG         = 'h102,  // Supervisor exception delegation register
-    SIDELEG         = 'h103,  // Supervisor interrupt delegation register
     SIE             = 'h104,  // Supervisor interrupt-enable register
     STVEC           = 'h105,  // Supervisor trap-handler base address
     SCOUNTEREN      = 'h106,  // Supervisor counter enable

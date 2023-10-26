@@ -44,9 +44,6 @@ class riscv_privileged_common_seq extends uvm_sequence;
     if(mode == SUPERVISOR_MODE) begin
       setup_smode_reg(mode, regs);
     end
-    if(mode == USER_MODE) begin
-      setup_umode_reg(mode, regs);
-    end
     if(cfg.virtual_addr_translation_on) begin
       setup_satp(instrs);
     end
@@ -84,7 +81,6 @@ class riscv_privileged_common_seq extends uvm_sequence;
     end
     mstatus.set_field("XS", 0);
     mstatus.set_field("SD", 0);
-    mstatus.set_field("UIE", 0);
     // Set the previous privileged mode as the target mode
     mstatus.set_field("MPP", mode);
     mstatus.set_field("SPP", 0);
@@ -100,7 +96,6 @@ class riscv_privileged_common_seq extends uvm_sequence;
     mstatus.set_field("SPIE", cfg.enable_interrupt);
     mstatus.set_field("SIE",  cfg.enable_interrupt);
     mstatus.set_field("UPIE", cfg.enable_interrupt);
-    mstatus.set_field("UIE", riscv_instr_pkg::support_umode_trap);
     `uvm_info(`gfn, $sformatf("mstatus_val: 0x%0x", mstatus.get_val()), UVM_LOW)
     regs.push_back(mstatus);
     // Enable external and timer interrupt
@@ -133,14 +128,12 @@ class riscv_privileged_common_seq extends uvm_sequence;
     sstatus.set_field("SPIE", cfg.enable_interrupt);
     sstatus.set_field("SIE",  cfg.enable_interrupt);
     sstatus.set_field("UPIE", cfg.enable_interrupt);
-    sstatus.set_field("UIE", riscv_instr_pkg::support_umode_trap);
     if(XLEN==64) begin
       sstatus.set_field("UXL", 2'b10);
     end
     sstatus.set_field("FS", cfg.mstatus_fs);
     sstatus.set_field("XS", 0);
     sstatus.set_field("SD", 0);
-    sstatus.set_field("UIE", 0);
     sstatus.set_field("SPP", 0);
     regs.push_back(sstatus);
     // Enable external and timer interrupt
@@ -157,33 +150,6 @@ class riscv_privileged_common_seq extends uvm_sequence;
       sie.set_field("STIE", cfg.enable_interrupt & cfg.enable_timer_irq);
       sie.set_field("UTIE", cfg.enable_interrupt & cfg.enable_timer_irq);
       regs.push_back(sie);
-    end
-  endfunction
-
-  virtual function void setup_umode_reg(privileged_mode_t mode, ref riscv_privil_reg regs[$]);
-    // For implementations that do not provide any U-mode CSRs, return immediately
-    if (!riscv_instr_pkg::support_umode_trap) begin
-      return;
-    end
-    ustatus = riscv_privil_reg::type_id::create("ustatus");
-    ustatus.init_reg(USTATUS);
-    `DV_CHECK_RANDOMIZE_FATAL(ustatus, "cannot randomize ustatus")
-    if (cfg.randomize_csr) begin
-      ustatus.set_val(cfg.ustatus);
-    end
-    ustatus.set_field("UIE", cfg.enable_interrupt);
-    ustatus.set_field("UPIE", cfg.enable_interrupt);
-    regs.push_back(ustatus);
-    if (UIE inside {implemented_csr}) begin
-      uie = riscv_privil_reg::type_id::create("uie");
-      uie.init_reg(UIE);
-      if (cfg.randomize_csr) begin
-        uie.set_val(cfg.uie);
-      end
-      uie.set_field("UEIE", cfg.enable_interrupt);
-      uie.set_field("USIE", cfg.enable_interrupt);
-      uie.set_field("UTIE", cfg.enable_interrupt & cfg.enable_timer_irq);
-      regs.push_back(uie);
     end
   endfunction
 

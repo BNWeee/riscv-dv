@@ -176,7 +176,8 @@ class riscv_asm_program_gen:
         self.gen_all_trap_handler(hart)
         # Interrupt handling subroutine
         for mode in rcs.supported_privileged_mode:
-            self.gen_interrupt_handler_section(mode, hart)
+            if mode != privileged_mode_t.USER_MODE:
+                self.gen_interrupt_handler_section(mode, hart)
         self.instr_stream.append(pkg_ins.get_label("kernel_instr_end: nop", hart))
         # User stack and data pages may not be accessible when executing trap handling programs in
         # machine/supervisor mode. Generate separate kernel data/stack sections to solve it.
@@ -672,19 +673,13 @@ class riscv_asm_program_gen:
                                   privileged_reg_t.MIDELEG,
                                   cfg.m_mode_exception_delegation,
                                   cfg.m_mode_interrupt_delegation)
-        if rcs.support_umode_trap:
-            self.gen_delegation_instr(hart,
-                                      privileged_reg_t.SEDELEG,
-                                      privileged_reg_t.SIDELEG,
-                                      cfg.s_mode_exception_delegation,
-                                      cfg.s_mode_interrupt_delegation)
 
     def gen_delegation_instr(self, hart, edeleg, ideleg,
                              edeleg_enable, ideleg_enable):
         # TODO
         pass
 
-    # Setup trap vector - MTVEC, STVEC, UTVEC
+    # Setup trap vector - MTVEC, STVEC
     def trap_vector_init(self, hart):
         instr = []
         for mode in rcs.supported_privileged_mode:
@@ -693,12 +688,13 @@ class riscv_asm_program_gen:
             elif mode == privileged_mode_t.SUPERVISOR_MODE:
                 trap_vec_reg = privileged_reg_t.STVEC
             elif mode == privileged_mode_t.USER_MODE:
-                trap_vec_reg = privileged_reg_t.UTVEC
+                trap_vec_reg = None
+                continue
             else:
                 logging.critical("Unsupported privileged_mode {}".format(mode.name))
                 sys.exit(1)
             # Skip utvec init if trap delegation to u_mode is not supported
-            if(mode == privileged_mode_t.USER_MODE and not (rcs.support_umode_trap)):
+            if(mode == privileged_mode_t.USER_MODE): # utevc deleted, umode set pass
                 continue
             if mode < cfg.init_privileged_mode:
                 continue
@@ -959,8 +955,6 @@ class riscv_asm_program_gen:
         # ls_unit = "w" if rcs.XLEN == 32 else "d"
         if mode < cfg.init_privileged_mode:
             return
-        if(mode is privileged_mode_t.USER_MODE and not (rcs.support_umode_trap)):
-            return
         if mode == privileged_mode_t.MACHINE_MODE:
             mode_prefix = "m"
             status = privileged_reg_t.MSTATUS
@@ -973,12 +967,6 @@ class riscv_asm_program_gen:
             ip = privileged_reg_t.SIP
             ie = privileged_reg_t.SIE
             scratch = privileged_reg_t.SSCRATCH
-        elif mode == privileged_mode_t.USER_MODE:
-            mode_prefix = "u"
-            status = privileged_reg_t.USTATUS
-            ip = privileged_reg_t.UIP
-            ie = privileged_reg_t.UIE
-            scratch = privileged_reg_t.USCRATCH
         else:
             logging.critical("Unsupported mode: {}".format(mode.name))
             sys.exit(1)
@@ -993,8 +981,6 @@ class riscv_asm_program_gen:
                 interrupt_handler_instr.append("csrsi {}, {}".format(hex(status), hex(8)))
             elif status == privileged_reg_t.SSTATUS:
                 interrupt_handler_instr.append("csrsi {}, {}".format(hex(status), hex(2)))
-            elif status == privileged_reg_t.USTATUS:
-                interrupt_handler_instr.append("csrsi {}, {}".format(hex(status), hex(1)))
             else:
                 logging.critical("Unsupported status {}".format(status.name))
                 sys.exit(1)

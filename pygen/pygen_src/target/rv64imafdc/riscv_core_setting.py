@@ -104,18 +104,9 @@ NUM_HARTS = 1
 # -----------------------------------------------------------------------------
 
 # Implemented previlieged CSR list
-implemented_csr = [privileged_reg_t.USTATUS,    # User status
-                   privileged_reg_t.UIE,        # User interrupt-enable register
-                   privileged_reg_t.UTVEC,      # User trap-handler base address
-                   privileged_reg_t.USCRATCH,   # Scratch register for user trap handlers
-                   privileged_reg_t.UEPC,       # User exception program counter
-                   privileged_reg_t.UCAUSE,     # User trap cause
-                   privileged_reg_t.UTVAL,      # User bad address or instruction
-                   privileged_reg_t.UIP,        # User interrupt pending
+implemented_csr = [
                    # Supervisor mode CSR
                    privileged_reg_t.SSTATUS,    # Supervisor status
-                   privileged_reg_t.SEDELEG,    # Supervisor exception delegation register
-                   privileged_reg_t.SIDELEG,    # Supervisor interrupt delegation register
                    privileged_reg_t.SIE,        # Supervisor interrupt-enable register
                    privileged_reg_t.STVEC,      # Supervisor trap-handler base address
                    privileged_reg_t.SCOUNTEREN, # Supervisor counter enable
