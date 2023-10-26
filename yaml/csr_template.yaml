@@ -1649,6 +1649,87 @@
       warl_legalize: |
         val_out = val_in
 
+- csr: mcouteren
+  description: >
+    Machine Counter-Enable Register
+  address: 0x306
+  privilege_mode: M
+  rv32:
+    - field_name: CY
+      description: >
+        mcycle access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 0
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: TM
+      description: >
+        mtime access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 1
+      lsb: 1
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: IR
+      description: >
+        minstret access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 2
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: HPM
+      description: >
+        hardware performance-monitoring counter access enable
+      type: R
+      reset_val: 0x0
+      msb: 31
+      lsb: 3
+      warl_legalize: |
+        val_out = val_in & 0x0
+  rv64:
+    - field_name: CY
+      description: >
+        mcycle access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 0
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: TM
+      description: >
+        mtime access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 1
+      lsb: 1
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: IR
+      description: >
+        minstret access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 2
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: HPM
+      description: >
+        hardware performance-monitoring counter access enable
+      type: R
+      reset_val: 0x0
+      msb: 63
+      lsb: 3
+      warl_legalize: |
+        val_out = val_in & 0x0
+
+
 # - csr: mwarlexample
 #   description: >
 #     Example of WARL field
@@ -1671,7 +1752,6 @@
 #         val_out = (val_in & 0xffff0000) | bottom_half
 
 
-# - mcouteren 306
 # - mscratch 340
 # - mepc 341
 # - mcause 342
