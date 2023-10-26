@@ -95,7 +95,6 @@ class riscv_privileged_common_seq extends uvm_sequence;
     mstatus.set_field("MIE", 0);
     mstatus.set_field("SPIE", cfg.enable_interrupt);
     mstatus.set_field("SIE",  cfg.enable_interrupt);
-    mstatus.set_field("UPIE", cfg.enable_interrupt);
     `uvm_info(`gfn, $sformatf("mstatus_val: 0x%0x", mstatus.get_val()), UVM_LOW)
     regs.push_back(mstatus);
     // Enable external and timer interrupt
@@ -105,15 +104,12 @@ class riscv_privileged_common_seq extends uvm_sequence;
       if (cfg.randomize_csr) begin
         mie.set_val(cfg.mie);
       end
-      mie.set_field("UEIE", cfg.enable_interrupt);
       mie.set_field("SEIE", cfg.enable_interrupt);
       mie.set_field("MEIE", cfg.enable_interrupt);
-      mie.set_field("USIE", cfg.enable_interrupt);
       mie.set_field("SSIE", cfg.enable_interrupt);
       mie.set_field("MSIE", cfg.enable_interrupt);
       mie.set_field("MTIE", cfg.enable_interrupt & cfg.enable_timer_irq);
       mie.set_field("STIE", cfg.enable_interrupt & cfg.enable_timer_irq);
-      mie.set_field("UTIE", cfg.enable_interrupt & cfg.enable_timer_irq);
       regs.push_back(mie);
     end
   endfunction
@@ -127,7 +123,6 @@ class riscv_privileged_common_seq extends uvm_sequence;
     end
     sstatus.set_field("SPIE", cfg.enable_interrupt);
     sstatus.set_field("SIE",  cfg.enable_interrupt);
-    sstatus.set_field("UPIE", cfg.enable_interrupt);
     if(XLEN==64) begin
       sstatus.set_field("UXL", 2'b10);
     end
@@ -143,12 +138,9 @@ class riscv_privileged_common_seq extends uvm_sequence;
       if (cfg.randomize_csr) begin
         sie.set_val(cfg.sie);
       end
-      sie.set_field("UEIE", cfg.enable_interrupt);
       sie.set_field("SEIE", cfg.enable_interrupt);
-      sie.set_field("USIE", cfg.enable_interrupt);
       sie.set_field("SSIE", cfg.enable_interrupt);
       sie.set_field("STIE", cfg.enable_interrupt & cfg.enable_timer_irq);
-      sie.set_field("UTIE", cfg.enable_interrupt & cfg.enable_timer_irq);
       regs.push_back(sie);
     end
   endfunction
