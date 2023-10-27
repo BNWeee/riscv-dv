@@ -53,53 +53,6 @@
 # legalize and 'val_out' should be written with the legalized value. 'val_orig'
 # contains the value that is currently in the CSR. See the examples below.
 
-
-# support 'a', 'c', 'd', 'f', 'i', 'm', 's', 'u'
-- csr: misa
-  description: >
-    Machine ISA Register
-  address: 0x301
-  privilege_mode: M
-  rv32:
-    - field_name: MXL
-      description: >
-        Encodes native base ISA width
-      type: WARL
-      reset_val: 1
-      msb: 31
-      lsb: 30
-    - field_name: Extensions
-      description: >
-        Encodes all supported ISA extensions
-      type: WARL
-      reset_val: 0x141105
-      msb: 25
-      lsb: 0
-      warl_legalize: |
-        # 'i', 'm' bits remains 1
-        # 'a', 'c', 'd', 'f', 'i', 'm', 's', 'u' bit can be toggled
-        # all other bits are 0
-        val_out = (val_in & 0x4) | 0x100
-  rv64:
-    - field_name: MXL
-      description: >
-        Encodes native base ISA width
-      type: WARL
-      reset_val: 2
-      msb: 63
-      lsb: 62
-    - field_name: Extensions
-      description: >
-        Encodes all supported ISA extensions
-      type: WARL
-      reset_val: 0x104
-      msb: 25
-      lsb: 0
-      warl_legalize: |
-        # I bit remains 1, C bit can be toggled, all other bits are 0
-        val_out = (val_in & 0x4) | 0x100
-
-
 # ***************************************************************************************
  # Author: Zhu Hang
  # E-mail: zhuhang@ict.ac.cn
@@ -108,11 +61,11 @@
 # ****************************************************************************************
 
 # Unprivileged Counter/Timers
-- csr: mcycle
+- csr: cycle
   description: >
-    Machine cycle count
+    Unprivileged cycle count
   address: 0xC00
-  privilege_mode: M
+  privilege_mode: U
   rv32:
     - field_name: CYCLE
       description: >
@@ -134,11 +87,11 @@
       warl_legalize: |
         val_out = val_in & 0xFFFFFFFFFFFFFFFF
 
-# - csr: mtime
+# - csr: time
 #   description: >
-#     Machine time count
+#     Unprivileged time count
 #   address: 0xC01
-#   privilege_mode: M
+#   privilege_mode: U
 #   rv32:
 #     - field_name: time
 #       description: >
@@ -160,11 +113,11 @@
 #       warl_legalize: |
 #         val_out = val_in & 0xFFFFFFFFFFFFFFFF
 
-- csr: minstret
+- csr: instret
   description: >
-    Machine retire instuction count
+    Unprivileged retire instuction count
   address: 0xC02
-  privilege_mode: M
+  privilege_mode: U
   rv32:
     - field_name: INSTRET
       description: >
@@ -1080,6 +1033,7 @@
       warl_legalize: |
         val_out = val_in & 0xF
 
+# Machine Information Registers
 - csr: mhartid
   description: >
     Machine Hart ID register
@@ -1106,6 +1060,7 @@
     warl_legalize: |
       val_out = (val_in & 0x0000000000000000) | 0x0000000000000000
 
+# Machine Trap Setup
 - csr: mstatus
   description: >
     Machine mode status
@@ -1537,6 +1492,49 @@
     warl_legalize: |
       val_out = val_in & 0x0
 
+- csr: misa # support 'a', 'c', 'd', 'f', 'i', 'm', 's', 'u'
+  description: >
+    Machine ISA Register
+  address: 0x301
+  privilege_mode: M
+  rv32:
+    - field_name: MXL
+      description: >
+        Encodes native base ISA width
+      type: WARL
+      reset_val: 1
+      msb: 31
+      lsb: 30
+    - field_name: Extensions
+      description: >
+        Encodes all supported ISA extensions
+      type: WARL
+      reset_val: 0x141105
+      msb: 25
+      lsb: 0
+      warl_legalize: |
+        # 'i', 'm' bits remains 1
+        # 'a', 'c', 'd', 'f', 'i', 'm', 's', 'u' bit can be toggled
+        # all other bits are 0
+        val_out = (val_in & 0x4) | 0x100
+  rv64:
+    - field_name: MXL
+      description: >
+        Encodes native base ISA width
+      type: WARL
+      reset_val: 2
+      msb: 63
+      lsb: 62
+    - field_name: Extensions
+      description: >
+        Encodes all supported ISA extensions
+      type: WARL
+      reset_val: 0x104
+      msb: 25
+      lsb: 0
+      warl_legalize: |
+        # I bit remains 1, C bit can be toggled, all other bits are 0
+        val_out = (val_in & 0x4) | 0x100
 
 - csr: medeleg
   description: >
@@ -2336,6 +2334,253 @@
       warl_legalize: |
         val_out = val_in & 0x0
 
+- csr: mtvec
+  description: >
+    Machine trap-vector base address register
+  address: 0x305
+  privilege_mode: M
+  rv32:
+    - field_name: mode
+      description: >
+        trap mode control
+      type: WARL
+      reset_val: 0
+      msb: 1
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: base
+      description: >
+        trap base address
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in
+  rv64:
+    - field_name: mode
+      description: >
+        trap mode control
+      type: WARL
+      reset_val: 0
+      msb: 1
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: base
+      description: >
+        trap base address
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in
+
+- csr: mcounteren
+  description: >
+    Machine Counter-Enable Register
+  address: 0x306
+  privilege_mode: M
+  rv32:
+    - field_name: CY
+      description: >
+        mcycle access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 0
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: TM
+      description: >
+        mtime access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 1
+      lsb: 1
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: IR
+      description: >
+        minstret access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 2
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: HPM
+      description: >
+        hardware performance-monitoring counter access enable
+      type: R
+      reset_val: 0x0
+      msb: 31
+      lsb: 3
+      warl_legalize: |
+        val_out = val_in & 0x0
+  rv64:
+    - field_name: CY
+      description: >
+        mcycle access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 0
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: TM
+      description: >
+        mtime access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 1
+      lsb: 1
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: IR
+      description: >
+        minstret access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 2
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: HPM
+      description: >
+        hardware performance-monitoring counter access enable
+      type: R
+      reset_val: 0x0
+      msb: 63
+      lsb: 3
+      warl_legalize: |
+        val_out = val_in & 0x0
+
+# Machine Trap Handling
+- csr: mscratch
+  description: >
+    Machine scracth register
+  address: 0x340
+  privilege_mode: M
+  rv32:
+    - field_name: SCRATCH
+      description: >
+        save a pointer whitch point to m mode hart loack context
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFF
+  rv64:
+    - field_name: scrach
+      description: >
+        save a pointer whitch point to m mode hart loack context
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFFFFFFFFFF
+
+- csr: mepc
+  description: >
+    Machine exception program counter register
+  address: 0x341
+  privilege_mode: M
+  rv32:
+    - field_name: EPC
+      description: >
+        Machine exception program counter
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFE
+  rv64:
+    - field_name: EPC
+      description: >
+        Machine exception program counter
+      type: WARL
+      reset_val: 0x0
+      msb: 63
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFFFFFFFFFE
+
+- csr: mcause
+  description: >
+    Machine exception cause register
+  address: 0x342
+  privilege_mode: M
+  rv32:
+    - field_name: CAUSE
+      description: >
+        trap cause number
+      type: WARL
+      reset_val: 0x0
+      msb: 30
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x7FFFFFFF
+    - field_name: interrupt
+      description: >
+        represent trap is interrupt or exception
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 31
+      warl_legalize: |
+        val_out = val_in & 0x1
+  rv64:
+    - field_name: CAUSE
+      description: >
+        trap cause number
+      type: WARL
+      reset_val: 0x0
+      msb: 62
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x7FFFFFFFFFFFFFFF
+    - field_name: interrupt
+      description: >
+        represent trap is interrupt or exception
+      type: WARL
+      reset_val: 0x0
+      msb: 63
+      lsb: 63
+      warl_legalize: |
+        val_out = val_in & 0x1
+
+- csr: mtval
+  description: >
+    Machine trap value register
+  address: 0x343
+  privilege_mode: M
+  rv32:
+    - field_name: TVAL
+      description: >
+        exception address
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFF
+  rv64:
+    - field_name: TVAL
+      description: >
+        exception address
+      type: WARL
+      reset_val: 0x0
+      msb: 63
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFFFFFFFFFF
+
 - csr: mip
   description: >
     Machine mode interrupt pending
@@ -2576,143 +2821,18 @@
       msb: 63
       lsb: 12
       warl_legalize: |
-        val_out = val_in & 0x0        
+        val_out = val_in & 0x0 
 
-
-- csr: mtvec
+# Machine Counter/Timers
+- csr: mcycle
   description: >
-    Machine trap-vector base address register
-  address: 0x305
+    Machine cycle count
+  address: 0xb00
   privilege_mode: M
   rv32:
-    - field_name: mode
+    - field_name: CYCLE
       description: >
-        trap mode control
-      type: WARL
-      reset_val: 0
-      msb: 1
-      lsb: 0
-      warl_legalize: |
-        val_out = val_in & 0x1
-    - field_name: base
-      description: >
-        trap base address
-      type: WARL
-      reset_val: 0
-      msb: 31
-      lsb: 2
-      warl_legalize: |
-        val_out = val_in
-  rv64:
-    - field_name: mode
-      description: >
-        trap mode control
-      type: WARL
-      reset_val: 0
-      msb: 1
-      lsb: 0
-      warl_legalize: |
-        val_out = val_in & 0x1
-    - field_name: base
-      description: >
-        trap base address
-      type: WARL
-      reset_val: 0
-      msb: 31
-      lsb: 2
-      warl_legalize: |
-        val_out = val_in
-
-- csr: mcounteren
-  description: >
-    Machine Counter-Enable Register
-  address: 0x306
-  privilege_mode: M
-  rv32:
-    - field_name: CY
-      description: >
-        mcycle access enable
-      type: WARL
-      reset_val: 0x0
-      msb: 0
-      lsb: 0
-      warl_legalize: |
-        val_out = val_in & 0x1
-    - field_name: TM
-      description: >
-        mtime access enable
-      type: WARL
-      reset_val: 0x0
-      msb: 1
-      lsb: 1
-      warl_legalize: |
-        val_out = val_in & 0x1
-    - field_name: IR
-      description: >
-        minstret access enable
-      type: WARL
-      reset_val: 0x0
-      msb: 2
-      lsb: 2
-      warl_legalize: |
-        val_out = val_in & 0x1
-    - field_name: HPM
-      description: >
-        hardware performance-monitoring counter access enable
-      type: R
-      reset_val: 0x0
-      msb: 31
-      lsb: 3
-      warl_legalize: |
-        val_out = val_in & 0x0
-  rv64:
-    - field_name: CY
-      description: >
-        mcycle access enable
-      type: WARL
-      reset_val: 0x0
-      msb: 0
-      lsb: 0
-      warl_legalize: |
-        val_out = val_in & 0x1
-    - field_name: TM
-      description: >
-        mtime access enable
-      type: WARL
-      reset_val: 0x0
-      msb: 1
-      lsb: 1
-      warl_legalize: |
-        val_out = val_in & 0x1
-    - field_name: IR
-      description: >
-        minstret access enable
-      type: WARL
-      reset_val: 0x0
-      msb: 2
-      lsb: 2
-      warl_legalize: |
-        val_out = val_in & 0x1
-    - field_name: HPM
-      description: >
-        hardware performance-monitoring counter access enable
-      type: R
-      reset_val: 0x0
-      msb: 63
-      lsb: 3
-      warl_legalize: |
-        val_out = val_in & 0x0
-
-
-- csr: mscratch
-  description: >
-    Machine scracth register
-  address: 0x340
-  privilege_mode: M
-  rv32:
-    - field_name: SCRATCH
-      description: >
-        save a pointer whitch point to m mode hart loack context
+        run cycle count
       type: WARL
       reset_val: 0x0
       msb: 31
@@ -2720,107 +2840,37 @@
       warl_legalize: |
         val_out = val_in & 0xFFFFFFFF
   rv64:
-    - field_name: scrach
+    - field_name: CYCLE
       description: >
-        save a pointer whitch point to m mode hart loack context
+        run cycle count
       type: WARL
       reset_val: 0x0
-      msb: 31
+      msb: 63
       lsb: 0
       warl_legalize: |
         val_out = val_in & 0xFFFFFFFFFFFFFFFF
 
-- csr: mepc
+- csr: minstret
   description: >
-    Machine exception program counter register
-  address: 0x341
+    Machine retire instuction count
+  address: 0xb02
   privilege_mode: M
   rv32:
-    - field_name: EPC
+    - field_name: INSTRET
       description: >
-        Machine exception program counter
+        retire instuction count
       type: WARL
-      reset_val: 0x0
-      msb: 31
-      lsb: 0
-      warl_legalize: |
-        val_out = val_in & 0xFFFFFFFE
-  rv64:
-    - field_name: EPC
-      description: >
-        Machine exception program counter
-      type: WARL
-      reset_val: 0x0
-      msb: 63
-      lsb: 0
-      warl_legalize: |
-        val_out = val_in & 0xFFFFFFFFFFFFFFFE
-
-- csr: mcause
-  description: >
-    Machine exception cause register
-  address: 0x342
-  privilege_mode: M
-  rv32:
-    - field_name: CAUSE
-      description: >
-        trap cause number
-      type: WARL
-      reset_val: 0x0
-      msb: 30
-      lsb: 0
-      warl_legalize: |
-        val_out = val_in & 0x7FFFFFFF
-    - field_name: interrupt
-      description: >
-        represent trap is interrupt or exception
-      type: WARL
-      reset_val: 0x0
-      msb: 31
-      lsb: 31
-      warl_legalize: |
-        val_out = val_in & 0x1
-  rv64:
-    - field_name: CAUSE
-      description: >
-        trap cause number
-      type: WARL
-      reset_val: 0x0
-      msb: 62
-      lsb: 0
-      warl_legalize: |
-        val_out = val_in & 0x7FFFFFFFFFFFFFFF
-    - field_name: interrupt
-      description: >
-        represent trap is interrupt or exception
-      type: WARL
-      reset_val: 0x0
-      msb: 63
-      lsb: 63
-      warl_legalize: |
-        val_out = val_in & 0x1
-
-- csr: mtval
-  description: >
-    Machine trap value register
-  address: 0x343
-  privilege_mode: M
-  rv32:
-    - field_name: TVAL
-      description: >
-        exception address
-      type: WARL
-      reset_val: 0x0
+      reset_val: 0xf
       msb: 31
       lsb: 0
       warl_legalize: |
         val_out = val_in & 0xFFFFFFFF
   rv64:
-    - field_name: TVAL
+    - field_name: INSTRET
       description: >
-        exception address
+        retire instuction count
       type: WARL
-      reset_val: 0x0
+      reset_val: 0xf
       msb: 63
       lsb: 0
       warl_legalize: |
