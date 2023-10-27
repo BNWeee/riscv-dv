@@ -106,6 +106,980 @@
  # Date: 2023-10-20
  # Update: Complete the CSR register implementation for Nanhu v3
 # ****************************************************************************************
+
+# Unprivileged Counter/Timers
+- csr: mcycle
+  description: >
+    Machine cycle count
+  address: 0xC00
+  privilege_mode: M
+  rv32:
+    - field_name: CYCLE
+      description: >
+        run cycle count
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFF
+  rv64:
+    - field_name: CYCLE
+      description: >
+        run cycle count
+      type: WARL
+      reset_val: 0x0
+      msb: 63
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFFFFFFFFFF
+
+# - csr: mtime
+#   description: >
+#     Machine time count
+#   address: 0xC01
+#   privilege_mode: M
+#   rv32:
+#     - field_name: time
+#       description: >
+#         time count
+#       type: WARL
+#       reset_val: 0xf
+#       msb: 31
+#       lsb: 0
+#       warl_legalize: |
+#         val_out = val_in & 0xFFFFFFFF
+#   rv64:
+#     - field_name: time
+#       description: >
+#         time count
+#       type: WARL
+#       reset_val: 0xf
+#       msb: 63
+#       lsb: 0
+#       warl_legalize: |
+#         val_out = val_in & 0xFFFFFFFFFFFFFFFF
+
+- csr: minstret
+  description: >
+    Machine retire instuction count
+  address: 0xC02
+  privilege_mode: M
+  rv32:
+    - field_name: INSTRET
+      description: >
+        retire instuction count
+      type: WARL
+      reset_val: 0xf
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFF
+  rv64:
+    - field_name: INSTRET
+      description: >
+        retire instuction count
+      type: WARL
+      reset_val: 0xf
+      msb: 63
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFFFFFFFFFF
+
+  # Supervisor Trap Setup
+- csr: sstatus
+  description: >
+    Supervisor mode status
+  address: 0x100
+  privilege_mode: S
+  rv32:
+    - field_name: WPRI0
+      description: >
+        Reserved bits [0]
+      type: WPRI
+      reset_val: 0x0
+      msb: 0
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SIE
+      description: >
+        Supervisor mode global interrupt enable
+      type: WARL
+      reset_val: 0x0
+      msb: 1
+      lsb: 1
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WPRI1
+      description: >
+        Reserved bits [4:2]
+      type: WPRI
+      reset_val: 0x0
+      msb: 4
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SPIE
+      description: >
+        Supervisor mode previous interrupt enable
+      type: WARL
+      reset_val: 0x0
+      msb: 5
+      lsb: 5
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: UBE
+      description: >
+        User mode endianness of memory accesses
+      type: WARL
+      reset_val: 0x0
+      msb: 6
+      lsb: 6
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WPRI2
+      description: >
+        Reserved bits [7]
+      type: WPRI
+      reset_val: 0x0
+      msb: 7
+      lsb: 7
+      warl_legalize: |
+        val_out = val_in & 0x0 
+    - field_name: SPP
+      description: >
+        Supervisor mode previous privilege mode
+      type: WARL
+      reset_val: 0x0
+      msb: 8
+      lsb: 8
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: VS # Nanhu v3 is implementing the vector extension"
+      description: >
+        Vector extension stable
+      type: WARL
+      reset_val: 0x1 # need set to 0 if not implemented
+      msb: 10
+      lsb: 9
+      warl_legalize: |
+        val_out = val_in & 0x3
+    - field_name: WPRI3
+      description: >
+        Reserved bits [12:11]
+      type: WPRI
+      reset_val: 0x0
+      msb: 12
+      lsb: 11
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: FS # Nanhu v3 has implemented the floating-point extension"
+      description: >
+        Floating-point extension stable
+      type: WARL
+      reset_val: 0x1
+      msb: 14
+      lsb: 13
+      warl_legalize: |
+        val_out = val_in & 0x3
+    - field_name: XS
+      description: >
+        Additional user-mode extesnions & associated state
+      type: R
+      reset_val: 0x0
+      msb: 16
+      lsb: 15
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: WPRI4
+      description: >
+        Reserved bits [17]
+      type: WARL
+      reset_val: 0x0
+      msb: 17
+      lsb: 17
+      warl_legalize: |
+        val_out = val_in & 0x10
+    - field_name: SUM
+      description: >
+        Permit supervisor user memory access
+      type: WARL
+      reset_val: 0x0
+      msb: 18
+      lsb: 18
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: MXR
+      description: >
+        Make EXEcutable readable, allow memory access from EXEcutable page
+      type: WARL
+      reset_val: 0x0
+      msb: 19
+      lsb: 19
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WPRI4
+      description: >
+        Reserved bits [30:20]
+      type: WPRI
+      reset_val: 0x0
+      msb: 30
+      lsb: 20
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SD
+      description: >
+        Summarize dirty state
+      type: R
+      reset_val: 0x1
+      msb: 31
+      lsb: 31
+      warl_legalize: |
+        val_out = val_in & 0x0
+  rv64:
+    - field_name: WPRI0
+      description: >
+        Reserved bits [0]
+      type: WPRI
+      reset_val: 0x0
+      msb: 0
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SIE
+      description: >
+        Supervisor mode global interrupt enable
+      type: WARL
+      reset_val: 0x0
+      msb: 1
+      lsb: 1
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WPRI1
+      description: >
+        Reserved bits [4:2]
+      type: WPRI
+      reset_val: 0x0
+      msb: 4
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SPIE
+      description: >
+        Supervisor mode previous interrupt enable
+      type: WARL
+      reset_val: 0x0
+      msb: 5
+      lsb: 5
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: UBE
+      description: >
+        User mode endianness of memory accesses
+      type: WARL
+      reset_val: 0x0
+      msb: 6
+      lsb: 6
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WPRI2
+      description: >
+        Reserved bits [7]
+      type: WPRI
+      reset_val: 0x0
+      msb: 7
+      lsb: 7
+      warl_legalize: |
+        val_out = val_in & 0x0 
+    - field_name: SPP
+      description: >
+        Supervisor mode previous privilege mode
+      type: WARL
+      reset_val: 0x0
+      msb: 8
+      lsb: 8
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: VS # Nanhu v3 is implementing the vector extension"
+      description: >
+        Vector extension stable
+      type: WARL
+      reset_val: 0x1 # need set to 0 if not implemented
+      msb: 10
+      lsb: 9
+      warl_legalize: |
+        val_out = val_in & 0x3
+    - field_name: WPRI3
+      description: >
+        Reserved bits [12:11]
+      type: WPRI
+      reset_val: 0x0
+      msb: 12
+      lsb: 11
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: FS # Nanhu v3 has implemented the floating-point extension"
+      description: >
+        Floating-point extension stable
+      type: WARL
+      reset_val: 0x1
+      msb: 14
+      lsb: 13
+      warl_legalize: |
+        val_out = val_in & 0x3
+    - field_name: XS
+      description: >
+        Additional user-mode extesnions & associated state
+      type: R
+      reset_val: 0x0
+      msb: 16
+      lsb: 15
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: WPRI4
+      description: >
+        Reserved bits [17]
+      type: WARL
+      reset_val: 0x0
+      msb: 17
+      lsb: 17
+      warl_legalize: |
+        val_out = val_in & 0x10
+    - field_name: SUM
+      description: >
+        Permit supervisor user memory access
+      type: WARL
+      reset_val: 0x0
+      msb: 18
+      lsb: 18
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: MXR
+      description: >
+        Make EXEcutable readable, allow memory access from EXEcutable page
+      type: WARL
+      reset_val: 0x0
+      msb: 19
+      lsb: 19
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WPRI4
+      description: >
+        Reserved bits [31:20]
+      type: WPRI
+      reset_val: 0x0
+      msb: 31
+      lsb: 20
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: UXL
+      description: >
+        Reserved bits [33:32]
+      type: WARL
+      reset_val: 0x0
+      msb: 33
+      lsb: 32
+      warl_legalize: |
+        val_out = val_in & 0x3
+    - field_name: WPRI5
+      description: >
+        Reserved bits [34:62]
+      type: WPRI
+      reset_val: 0x0
+      msb: 62
+      lsb: 34
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SD
+      description: >
+        Summarize dirty state
+      type: R
+      reset_val: 0x1
+      msb: 63
+      lsb: 63
+      warl_legalize: |
+        val_out = val_in & 0x0
+  
+- csr: sie
+  description: >
+    Supervisor interrupt enable
+  address: 0x104
+  privilege_mode: S
+  rv32:
+    - field_name: WARL0
+      description: >
+        Reserved [0]
+      type: R
+      reset_val: 0x0
+      msb: 0
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SSIE
+      description: >
+        Supervisor-mode software interrupt
+      type: WARL
+      reset_val: 0x0
+      msb: 1
+      lsb: 1
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WARL1
+      description: >
+        Reserved [4:2]
+      type: R
+      reset_val: 0x0
+      msb: 4
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: STIE
+      description: >
+        Supervisor-mode timer interrupt
+      type: WARL
+      reset_val: 0x0
+      msb: 5
+      lsb: 5
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WARL2
+      description: >
+        Reserved [8:6]
+      type: R
+      reset_val: 0x0
+      msb: 8
+      lsb: 6
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SEIE
+      description: >
+        Supervisor-mode external interrupt
+      type: WARL
+      reset_val: 0x0
+      msb: 9
+      lsb: 9
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WARL3
+      description: >
+        Reserved [31:10]
+      type: R
+      reset_val: 0x0
+      msb: 31
+      lsb: 10
+      warl_legalize: |
+        val_out = val_in & 0x0
+  rv64:
+    - field_name: WARL0
+      description: >
+        Reserved [0]
+      type: R
+      reset_val: 0x0
+      msb: 0
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SSIE
+      description: >
+        Supervisor-mode software interrupt
+      type: WARL
+      reset_val: 0x0
+      msb: 1
+      lsb: 1
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WARL1
+      description: >
+        Reserved [4:2]
+      type: R
+      reset_val: 0x0
+      msb: 4
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: STIE
+      description: >
+        Supervisor-mode timer interrupt
+      type: WARL
+      reset_val: 0x0
+      msb: 5
+      lsb: 5
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WARL2
+      description: >
+        Reserved [8:6]
+      type: R
+      reset_val: 0x0
+      msb: 8
+      lsb: 6
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SEIE
+      description: >
+        Supervisor-mode external interrupt
+      type: WARL
+      reset_val: 0x0
+      msb: 9
+      lsb: 9
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WARL3
+      description: >
+        Reserved [31:10]
+      type: R
+      reset_val: 0x0
+      msb: 63
+      lsb: 10
+      warl_legalize: |
+        val_out = val_in & 0x0
+
+- csr: stvec
+  description: >
+    Supervisor trap-vector base address register
+  address: 0x105
+  privilege_mode: S
+  rv32:
+    - field_name: mode
+      description: >
+        trap mode control
+      type: WARL
+      reset_val: 0
+      msb: 1
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: base
+      description: >
+        trap base address
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in
+  rv64:
+    - field_name: mode
+      description: >
+        trap mode control
+      type: WARL
+      reset_val: 0
+      msb: 1
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: base
+      description: >
+        trap base address
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in
+
+- csr: scounteren
+  description: >
+    Supervisor Counter-Enable Register
+  address: 0x106
+  privilege_mode: S
+  rv32:
+    - field_name: CY
+      description: >
+        mcycle access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 0
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: TM
+      description: >
+        mtime access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 1
+      lsb: 1
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: IR
+      description: >
+        minstret access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 2
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: HPM
+      description: >
+        hardware performance-monitoring counter access enable
+      type: R
+      reset_val: 0x0
+      msb: 31
+      lsb: 3
+      warl_legalize: |
+        val_out = val_in & 0x0
+  rv64:
+    - field_name: CY
+      description: >
+        mcycle access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 0
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: TM
+      description: >
+        mtime access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 1
+      lsb: 1
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: IR
+      description: >
+        minstret access enable
+      type: WARL
+      reset_val: 0x0
+      msb: 2
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in & 0x1
+    - field_name: HPM
+      description: >
+        hardware performance-monitoring counter access enable
+      type: R
+      reset_val: 0x0
+      msb: 63
+      lsb: 3
+      warl_legalize: |
+        val_out = val_in & 0x0
+
+  # Supervisor Trap Handling
+- csr: sscratch
+  description: >
+    Supervisor scracth register
+  address: 0x140
+  privilege_mode: S
+  rv32:
+    - field_name: SCRATCH
+      description: >
+        save a pointer whitch point to m mode hart loack context
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFF
+  rv64:
+    - field_name: SCRATCH
+      description: >
+        save a pointer whitch point to m mode hart loack context
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFFFFFFFFFF
+
+- csr: sepc
+  description: >
+    Supervisor exception program counter register
+  address: 0x141
+  privilege_mode: S
+  rv32:
+    - field_name: EPC
+      description: >
+        Supervisor exception program counter
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFE
+  rv64:
+    - field_name: EPC
+      description: >
+        Supervisor exception program counter
+      type: WARL
+      reset_val: 0x0
+      msb: 63
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFFFFFFFFFE
+
+- csr: scause
+  description: >
+    Supervisor exception cause register
+  address: 0x142
+  privilege_mode: S
+  rv32:
+    - field_name: CAUSE
+      description: >
+        trap cause number
+      type: WARL
+      reset_val: 0x0
+      msb: 30
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x7FFFFFFF
+    - field_name: interrupt
+      description: >
+        represent trap is interrupt or exception
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 31
+      warl_legalize: |
+        val_out = val_in & 0x1
+  rv64:
+    - field_name: CAUSE
+      description: >
+        trap cause number
+      type: WARL
+      reset_val: 0x0
+      msb: 62
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x7FFFFFFFFFFFFFFF
+    - field_name: interrupt
+      description: >
+        represent trap is interrupt or exception
+      type: WARL
+      reset_val: 0x0
+      msb: 63
+      lsb: 63
+      warl_legalize: |
+        val_out = val_in & 0x1
+
+- csr: stval
+  description: >
+    Supervisor trap value register
+  address: 0x143
+  privilege_mode: M
+  rv32:
+    - field_name: TVAL
+      description: >
+        exception address
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFF
+  rv64:
+    - field_name: TVAL
+      description: >
+        exception address
+      type: WARL
+      reset_val: 0x0
+      msb: 63
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFFFFFFFFFF
+
+- csr: sip
+  description: >
+    Supervisor mode interrupt pending
+  address: 0x144
+  privilege_mode: M
+  rv32:
+    - field_name: WARL0
+      description: >
+        Reserved [0]
+      type: R
+      reset_val: 0x0
+      msb: 0
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SSIP
+      description: >
+        Supervisor-mode software interrupt
+      type: WARL
+      reset_val: 0x0
+      msb: 1
+      lsb: 1
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WARL1
+      description: >
+        Reserved [2]
+      type: R
+      reset_val: 0x0
+      msb: 4
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: STIP
+      description: >
+        Supervisor-mode timer interrupt
+      type: WARL
+      reset_val: 0x0
+      msb: 5
+      lsb: 5
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WARL2
+      description: >
+        Reserved [8:6]
+      type: R
+      reset_val: 0x0
+      msb: 8
+      lsb: 6
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SEIP
+      description: >
+        Supervisor-mode external interrupt
+      type: WARL
+      reset_val: 0x0
+      msb: 9
+      lsb: 9
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WARL3
+      description: >
+        Reserved [31:10]
+      type: R
+      reset_val: 0x0
+      msb: 31
+      lsb: 10
+      warl_legalize: |
+        val_out = val_in & 0x0
+  rv64:
+    - field_name: WARL0
+      description: >
+        Reserved [0]
+      type: R
+      reset_val: 0x0
+      msb: 0
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SSIP
+      description: >
+        Supervisor-mode software interrupt
+      type: WARL
+      reset_val: 0x0
+      msb: 1
+      lsb: 1
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WARL1
+      description: >
+        Reserved [2]
+      type: R
+      reset_val: 0x0
+      msb: 4
+      lsb: 2
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: STIP
+      description: >
+        Supervisor-mode timer interrupt
+      type: WARL
+      reset_val: 0x0
+      msb: 5
+      lsb: 5
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WARL2
+      description: >
+        Reserved [8:6]
+      type: R
+      reset_val: 0x0
+      msb: 8
+      lsb: 6
+      warl_legalize: |
+        val_out = val_in & 0x0
+    - field_name: SEIP
+      description: >
+        Supervisor-mode external interrupt
+      type: WARL
+      reset_val: 0x0
+      msb: 9
+      lsb: 9
+      warl_legalize: |
+        val_out = val_in & 0x1 
+    - field_name: WARL3
+      description: >
+        Reserved [31:10]
+      type: R
+      reset_val: 0x0
+      msb: 63
+      lsb: 10
+      warl_legalize: |
+        val_out = val_in & 0x0
+
+  # // Supervisor Protection and Translation
+  # val Satp          = 0x180
+- csr: satp
+  description: >
+    Supervisor Address Translation and Protection Register
+  address: 0x180
+  privilege_mode: S
+  rv32:
+    - field_name: PPN
+      description: >
+        Physical page number
+      type: WARL
+      reset_val: 0x0
+      msb: 21
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0x3FFFFF
+    - field_name: ASID
+      description: >
+        Address Space Identifier
+      type: WARL
+      reset_val: 0x0
+      msb: 30
+      lsb: 22
+      warl_legalize: |
+        val_out = val_in & 0x1FF
+    - field_name: MODE
+      description: >
+        Page translation mode
+      type: WARL
+      reset_val: 0x0
+      msb: 31
+      lsb: 31
+      warl_legalize: |
+        val_out = val_in & 0x1
+  rv64:
+    - field_name: PPN
+      description: >
+        Physical page number
+      type: WARL
+      reset_val: 0x0
+      msb: 43
+      lsb: 0
+      warl_legalize: |
+        val_out = val_in & 0xFFFFFFFFFFF
+    - field_name: ASID
+      description: >
+        Address Space Identifier
+      type: WARL
+      reset_val: 0x0
+      msb: 59
+      lsb: 44
+      warl_legalize: |
+        val_out = val_in & 0xFFFF
+    - field_name: MODE
+      description: >
+        Page translation mode
+      type: WARL
+      reset_val: 0x0
+      msb: 63
+      lsb: 60
+      warl_legalize: |
+        val_out = val_in & 0xF
+
 - csr: mhartid
   description: >
     Machine Hart ID register
@@ -134,7 +1108,7 @@
 
 - csr: mstatus
   description: >
-    Machine status
+    Machine mode status
   address: 0x300
   privilege_mode: M
   rv32:
@@ -146,7 +1120,7 @@
     msb: 0
     lsb: 0
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x0
+      val_out = val_in & 0x0
   - field_name: SIE
     description: >
       Supervisor mode global interrupt enable
@@ -155,7 +1129,7 @@
     msb: 1
     lsb: 1
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: WPRI1
     description: >
       Reserved bits [2]
@@ -164,7 +1138,7 @@
     msb: 2
     lsb: 2
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x0
+      val_out = val_in & 0x0
   - field_name: MIE
     description: >
       Machine mode global interrupt enable
@@ -173,7 +1147,7 @@
     msb: 3
     lsb: 3
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: WPRI2
     description: >
       Reserved bits [4]
@@ -182,7 +1156,7 @@
     msb: 4
     lsb: 4
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x0
+      val_out = val_in & 0x0
   - field_name: SPIE
     description: >
       Supervisor mode previous interrupt enable
@@ -191,7 +1165,7 @@
     msb: 5
     lsb: 5
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: UBE
     description: >
       User mode endianness of memory accesses
@@ -200,7 +1174,7 @@
     msb: 6
     lsb: 6
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: MPIE
     description: >
       Machine mode previous interrupt enable
@@ -209,7 +1183,7 @@
     msb: 7
     lsb: 7
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: SPP
     description: >
       Supervisor mode previous privilege mode
@@ -218,7 +1192,7 @@
     msb: 8
     lsb: 8
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: VS # Nanhu v3 is implementing the vector extension"
     description: >
       Vector extension stable
@@ -227,7 +1201,7 @@
     msb: 10
     lsb: 9
     warl_legalize: |
-      val_out = (val_in & 0x3) | 0x3
+      val_out = val_in & 0x3
   - field_name: MPP
     description: >
       Machine mode previous privilege mode
@@ -236,7 +1210,7 @@
     msb: 12
     lsb: 11
     warl_legalize: |
-      val_out = (val_in & 0x3) | 0x3
+      val_out = val_in & 0x3
   - field_name: FS # Nanhu v3 has implemented the floating-point extension"
     description: >
       Floating-point extension stable
@@ -245,7 +1219,7 @@
     msb: 14
     lsb: 13
     warl_legalize: |
-      val_out = (val_in & 0x3) | 0x3
+      val_out = val_in & 0x3
   - field_name: XS
     description: >
       Additional user-mode extesnions & associated state
@@ -254,7 +1228,7 @@
     msb: 16
     lsb: 15
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x3
+      val_out = val_in & 0x0
   - field_name: MPRV
     description: >
       Machine mode memory priveileged
@@ -263,7 +1237,7 @@
     msb: 17
     lsb: 17
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: SUM
     description: >
       Permit supervisor user memory access
@@ -272,7 +1246,7 @@
     msb: 18
     lsb: 18
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: MXR
     description: >
       Make EXEcutable readable, allow memory access from EXEcutable page
@@ -281,7 +1255,7 @@
     msb: 19
     lsb: 19
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: TVM
     description: >
       Trap virtual memory, intercept the virtual-memory management operations of Supervisor mode
@@ -290,7 +1264,7 @@
     msb: 20
     lsb: 20
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: TW
     description: >
       Trap WFI instruction
@@ -299,7 +1273,7 @@
     msb: 21
     lsb: 21
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: TSR
     description: >
       Trap SRET instruction
@@ -308,7 +1282,7 @@
     msb: 22
     lsb: 22
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: WPRI3
     description: >
       Reserved bits [30:23]
@@ -317,7 +1291,7 @@
     msb: 30
     lsb: 23
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x0
+      val_out = val_in & 0x0
   - field_name: SD
     description: >
       Summarize dirty state
@@ -326,7 +1300,7 @@
     msb: 31
     lsb: 31
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x1
+      val_out = val_in & 0x0
   rv64:
   - field_name: WPRI0
     description: >
@@ -336,7 +1310,7 @@
     msb: 0
     lsb: 0
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x0
+      val_out = val_in & 0x0
   - field_name: SIE
     description: >
       Supervisor mode global interrupt enable
@@ -345,7 +1319,7 @@
     msb: 1
     lsb: 1
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: WPRI1
     description: >
       Reserved bits [2]
@@ -354,7 +1328,7 @@
     msb: 2
     lsb: 2
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x0
+      val_out = val_in & 0x0
   - field_name: MIE
     description: >
       Machine mode global interrupt enable
@@ -363,7 +1337,7 @@
     msb: 3
     lsb: 3
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: WPRI2
     description: >
       Reserved bits [4]
@@ -372,7 +1346,7 @@
     msb: 4
     lsb: 4
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x0
+      val_out = val_in & 0x0
   - field_name: SPIE
     description: >
       Supervisor mode previous interrupt enable
@@ -381,7 +1355,7 @@
     msb: 5
     lsb: 5
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: UBE
     description: >
       User mode endianness of memory accesses
@@ -390,7 +1364,7 @@
     msb: 6
     lsb: 6
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: MPIE
     description: >
       Machine mode previous interrupt enable
@@ -399,7 +1373,7 @@
     msb: 7
     lsb: 7
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: SPP
     description: >
       Supervisor mode previous privilege mode
@@ -408,7 +1382,7 @@
     msb: 8
     lsb: 8
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: VS # Nanhu v3 is implementing the vector extension"
     description: >
       Vector extension stable
@@ -417,7 +1391,7 @@
     msb: 10
     lsb: 9
     warl_legalize: |
-      val_out = (val_in & 0x3) | 0x3
+      val_out = val_in & 0x3
   - field_name: MPP
     description: >
       Machine mode previous privilege mode
@@ -426,7 +1400,7 @@
     msb: 12
     lsb: 11
     warl_legalize: |
-      val_out = (val_in & 0x3) | 0x3
+      val_out = val_in & 0x3
   - field_name: FS # Nanhu v3 has implemented the floating-point extension"
     description: >
       Floating-point extension stable
@@ -435,7 +1409,7 @@
     msb: 14
     lsb: 13
     warl_legalize: |
-      val_out = (val_in & 0x3) | 0x3
+      val_out = val_in & 0x3
   - field_name: XS
     description: >
       Additional user-mode extesnions & associated state
@@ -444,7 +1418,7 @@
     msb: 16
     lsb: 15
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x3
+      val_out = val_in & 0x0
   - field_name: MPRV
     description: >
       Machine mode memory priveileged
@@ -453,7 +1427,7 @@
     msb: 17
     lsb: 17
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: SUM
     description: >
       Permit supervisor user memory access
@@ -462,7 +1436,7 @@
     msb: 18
     lsb: 18
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: MXR
     description: >
       Make EXEcutable readable, allow memory access from EXEcutable page
@@ -471,7 +1445,7 @@
     msb: 19
     lsb: 19
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: TVM
     description: >
       Trap virtual memory, intercept the virtual-memory management operations of Supervisor mode
@@ -480,7 +1454,7 @@
     msb: 20
     lsb: 20
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: TW
     description: >
       Trap WFI instruction
@@ -489,7 +1463,7 @@
     msb: 21
     lsb: 21
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: TSR
     description: >
       Trap SRET instruction
@@ -498,7 +1472,7 @@
     msb: 22
     lsb: 22
     warl_legalize: |
-      val_out = (val_in & 0x1) 
+      val_out = val_in & 0x1 
   - field_name: WPRI3
     description: >
       Reserved bits [31:23]
@@ -507,7 +1481,7 @@
     msb: 31
     lsb: 23
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x0
+      val_out = val_in & 0x0
   - field_name: UXL
     description: >
       User mode xlen control
@@ -516,7 +1490,7 @@
     msb: 33
     lsb: 32
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x3
+      val_out = val_in & 0x0
   - field_name: SXL
     description: >
       Supervisor mode xlen control
@@ -525,7 +1499,7 @@
     msb: 35
     lsb: 34
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x3
+      val_out = val_in & 0x0
   - field_name: SBE
     description: >
       Supervisor mode endianness of memory accesses
@@ -534,7 +1508,7 @@
     msb: 36
     lsb: 36
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x1
+      val_out = val_in & 0x0
   - field_name: MBE
     description: >
       Machine mode endianness of memory accesses
@@ -543,7 +1517,7 @@
     msb: 37
     lsb: 37
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x1
+      val_out = val_in & 0x0
   - field_name: WPRI4
     description: >
       Reserved bits [62:38]
@@ -552,7 +1526,7 @@
     msb: 62
     lsb: 38
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x0
+      val_out = val_in & 0x0
   - field_name: SD
     description: >
       Summarize dirty state
@@ -561,7 +1535,7 @@
     msb: 63
     lsb: 63
     warl_legalize: |
-      val_out = (val_in & 0x0) | 0x1
+      val_out = val_in & 0x0
 
 
 - csr: medeleg
@@ -578,7 +1552,7 @@
       msb: 0
       lsb: 0
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: IAF
       description: >
         Instruction access fault
@@ -587,7 +1561,7 @@
       msb: 1
       lsb: 1
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: ILGL
       description: >
         Illegal instruction
@@ -596,7 +1570,7 @@
       msb: 2
       lsb: 2
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: BREAK
       description: >
         Breakpoint
@@ -605,7 +1579,7 @@
       msb: 3
       lsb: 3
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: LAM
       description: >
         Load address misaligned
@@ -614,7 +1588,7 @@
       msb: 4
       lsb: 4
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: LAF
       description: >
         Load access fault
@@ -623,7 +1597,7 @@
       msb: 5
       lsb: 5
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: SAM
       description: >
         Store/AMO address misaligned
@@ -632,7 +1606,7 @@
       msb: 6
       lsb: 6
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: SAF
       description: >
         Store/AMO access fault
@@ -641,7 +1615,7 @@
       msb: 7
       lsb: 7
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: ECFU
       description: >
         Environment call from User-mode
@@ -650,7 +1624,7 @@
       msb: 8
       lsb: 8
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: ECFS
       description: >
         Environment call from Supervisor-mode
@@ -659,7 +1633,7 @@
       msb: 9
       lsb: 9
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL0
       description: >
         Reserved [10]
@@ -668,7 +1642,7 @@
       msb: 10
       lsb: 10
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: ECFM # M call can not be delegated
       description: >
         Environment call from Machine-mode
@@ -677,7 +1651,7 @@
       msb: 11
       lsb: 11
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: IPF
       description: >
         Instruction page fault
@@ -686,7 +1660,7 @@
       msb: 12
       lsb: 12
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: LPF
       description: >
         Load page fault
@@ -695,7 +1669,7 @@
       msb: 13
       lsb: 13
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL1
       description: >
         Reserved [14]
@@ -704,7 +1678,7 @@
       msb: 14
       lsb: 14
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: SPF
       description: >
         Store/AMO page fault
@@ -713,7 +1687,7 @@
       msb: 15
       lsb: 15
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL2
       description: >
         Reserved [63:16]
@@ -722,7 +1696,7 @@
       msb: 31
       lsb: 16
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
   rv64:
     - field_name: IAM
       description: >
@@ -732,7 +1706,7 @@
       msb: 0
       lsb: 0
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: IAF
       description: >
         Instruction access fault
@@ -741,7 +1715,7 @@
       msb: 1
       lsb: 1
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: ILGL
       description: >
         Illegal instruction
@@ -750,7 +1724,7 @@
       msb: 2
       lsb: 2
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: BREAK
       description: >
         Breakpoint
@@ -759,7 +1733,7 @@
       msb: 3
       lsb: 3
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: LAM
       description: >
         Load address misaligned
@@ -768,7 +1742,7 @@
       msb: 4
       lsb: 4
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: LAF
       description: >
         Load access fault
@@ -777,7 +1751,7 @@
       msb: 5
       lsb: 5
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: SAM
       description: >
         Store/AMO address misaligned
@@ -786,7 +1760,7 @@
       msb: 6
       lsb: 6
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: SAF
       description: >
         Store/AMO access fault
@@ -795,7 +1769,7 @@
       msb: 7
       lsb: 7
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: ECFU
       description: >
         Environment call from User-mode
@@ -804,7 +1778,7 @@
       msb: 8
       lsb: 8
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: ECFS
       description: >
         Environment call from Supervisor-mode
@@ -813,7 +1787,7 @@
       msb: 9
       lsb: 9
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL0
       description: >
         Reserved [10]
@@ -822,7 +1796,7 @@
       msb: 10
       lsb: 10
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: ECFM # M call can not be delegated
       description: >
         Environment call from Machine-mode
@@ -831,7 +1805,7 @@
       msb: 11
       lsb: 11
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: IPF
       description: >
         Instruction page fault
@@ -840,7 +1814,7 @@
       msb: 12
       lsb: 12
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: LPF
       description: >
         Load page fault
@@ -849,7 +1823,7 @@
       msb: 13
       lsb: 13
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL1
       description: >
         Reserved [14]
@@ -858,7 +1832,7 @@
       msb: 14
       lsb: 14
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: SPF
       description: >
         Store/AMO page fault
@@ -867,7 +1841,7 @@
       msb: 15
       lsb: 15
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL2
       description: >
         Reserved [31:16]
@@ -876,7 +1850,7 @@
       msb: 31
       lsb: 16
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
 
 - csr: mideleg
   description: >
@@ -892,7 +1866,7 @@
       msb: 0
       lsb: 0
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: SSIP
       description: >
         Supervisor-mode software interrupt
@@ -901,7 +1875,7 @@
       msb: 1
       lsb: 1
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL1
       description: >
         Reserved [2]
@@ -910,7 +1884,7 @@
       msb: 2
       lsb: 2
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: MSIP
       description: >
         Machine-mode software interrupt
@@ -919,7 +1893,7 @@
       msb: 3
       lsb: 3
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: WARL2
       description: >
         Reserved [4]
@@ -928,7 +1902,7 @@
       msb: 4
       lsb: 4
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: STIP
       description: >
         Supervisor-mode timer interrupt
@@ -937,7 +1911,7 @@
       msb: 5
       lsb: 5
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL3
       description: >
         Reserved [6]
@@ -946,7 +1920,7 @@
       msb: 6
       lsb: 6
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: MTIP
       description: >
         Machine-mode timer interrupt
@@ -955,7 +1929,7 @@
       msb: 7
       lsb: 7
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: WARL4
       description: >
         Reserved [8]
@@ -964,7 +1938,7 @@
       msb: 8
       lsb: 8
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: SEIP
       description: >
         Supervisor-mode external interrupt
@@ -973,7 +1947,7 @@
       msb: 9
       lsb: 9
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL5
       description: >
         Reserved [10]
@@ -982,7 +1956,7 @@
       msb: 10
       lsb: 10
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: MEIP
       description: >
         Supervisor-mode external interrupt
@@ -991,7 +1965,7 @@
       msb: 11
       lsb: 11
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: WARL6
       description: >
         Reserved [31:12]
@@ -1000,7 +1974,7 @@
       msb: 31
       lsb: 12
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
   rv64:
     - field_name: WARL0
       description: >
@@ -1010,7 +1984,7 @@
       msb: 0
       lsb: 0
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: SSIP
       description: >
         Supervisor-mode software interrupt
@@ -1019,7 +1993,7 @@
       msb: 1
       lsb: 1
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL1
       description: >
         Reserved [2]
@@ -1028,7 +2002,7 @@
       msb: 2
       lsb: 2
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: MSIP
       description: >
         Machine-mode software interrupt
@@ -1037,7 +2011,7 @@
       msb: 3
       lsb: 3
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: WARL2
       description: >
         Reserved [4]
@@ -1046,7 +2020,7 @@
       msb: 4
       lsb: 4
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: STIP
       description: >
         Supervisor-mode timer interrupt
@@ -1055,7 +2029,7 @@
       msb: 5
       lsb: 5
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL3
       description: >
         Reserved [6]
@@ -1064,7 +2038,7 @@
       msb: 6
       lsb: 6
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: MTIP
       description: >
         Machine-mode timer interrupt
@@ -1073,7 +2047,7 @@
       msb: 7
       lsb: 7
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: WARL4
       description: >
         Reserved [8]
@@ -1082,7 +2056,7 @@
       msb: 8
       lsb: 8
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: SEIP
       description: >
         Supervisor-mode external interrupt
@@ -1091,7 +2065,7 @@
       msb: 9
       lsb: 9
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL5
       description: >
         Reserved [10]
@@ -1100,7 +2074,7 @@
       msb: 10
       lsb: 10
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: MEIP
       description: >
         Machine-mode external interrupt
@@ -1109,7 +2083,7 @@
       msb: 11
       lsb: 11
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: WARL6
       description: >
         Reserved [63:12]
@@ -1118,7 +2092,7 @@
       msb: 63
       lsb: 12
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
 
 - csr: mie
   description: >
@@ -1134,7 +2108,7 @@
       msb: 0
       lsb: 0
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: SSIE
       description: >
         Supervisor-mode software interrupt
@@ -1143,7 +2117,7 @@
       msb: 1
       lsb: 1
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL1
       description: >
         Reserved [2]
@@ -1152,7 +2126,7 @@
       msb: 2
       lsb: 2
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: MSIE
       description: >
         Machine-mode software interrupt
@@ -1161,7 +2135,7 @@
       msb: 3
       lsb: 3
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL2
       description: >
         Reserved [4]
@@ -1170,7 +2144,7 @@
       msb: 4
       lsb: 4
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: STIE
       description: >
         Supervisor-mode timer interrupt
@@ -1179,7 +2153,7 @@
       msb: 5
       lsb: 5
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL3
       description: >
         Reserved [6]
@@ -1188,7 +2162,7 @@
       msb: 6
       lsb: 6
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: MTIE
       description: >
         Machine-mode timer interrupt
@@ -1197,7 +2171,7 @@
       msb: 7
       lsb: 7
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL4
       description: >
         Reserved [8]
@@ -1206,7 +2180,7 @@
       msb: 8
       lsb: 8
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: SEIE
       description: >
         Supervisor-mode external interrupt
@@ -1215,7 +2189,7 @@
       msb: 9
       lsb: 9
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL5
       description: >
         Reserved [10]
@@ -1224,7 +2198,7 @@
       msb: 10
       lsb: 10
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: MEIE
       description: >
         Supervisor-mode external interrupt
@@ -1233,7 +2207,7 @@
       msb: 11
       lsb: 11
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL6
       description: >
         Reserved [31:12]
@@ -1242,7 +2216,7 @@
       msb: 31
       lsb: 12
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
   rv64:
     - field_name: WARL0
       description: >
@@ -1252,7 +2226,7 @@
       msb: 0
       lsb: 0
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: SSIE
       description: >
         Supervisor-mode software interrupt
@@ -1261,7 +2235,7 @@
       msb: 1
       lsb: 1
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL1
       description: >
         Reserved [2]
@@ -1270,7 +2244,7 @@
       msb: 2
       lsb: 2
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: MSIE
       description: >
         Machine-mode software interrupt
@@ -1279,7 +2253,7 @@
       msb: 3
       lsb: 3
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL2
       description: >
         Reserved [4]
@@ -1288,7 +2262,7 @@
       msb: 4
       lsb: 4
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: STIE
       description: >
         Supervisor-mode timer interrupt
@@ -1297,7 +2271,7 @@
       msb: 5
       lsb: 5
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL3
       description: >
         Reserved [6]
@@ -1306,7 +2280,7 @@
       msb: 6
       lsb: 6
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: MTIE
       description: >
         Machine-mode timer interrupt
@@ -1315,7 +2289,7 @@
       msb: 7
       lsb: 7
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL4
       description: >
         Reserved [8]
@@ -1324,7 +2298,7 @@
       msb: 8
       lsb: 8
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: SEIE
       description: >
         Supervisor-mode external interrupt
@@ -1333,7 +2307,7 @@
       msb: 9
       lsb: 9
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL5
       description: >
         Reserved [10]
@@ -1342,7 +2316,7 @@
       msb: 10
       lsb: 10
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
     - field_name: MEIE
       description: >
         Supervisor-mode external interrupt
@@ -1351,7 +2325,7 @@
       msb: 11
       lsb: 11
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL6
       description: >
         Reserved [63:12]
@@ -1360,11 +2334,11 @@
       msb: 63
       lsb: 12
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
 
 - csr: mip
   description: >
-    Machine interrupt pending
+    Machine mode interrupt pending
   address: 0x344
   privilege_mode: M
   rv32:
@@ -1376,8 +2350,8 @@
       msb: 0
       lsb: 0
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
-    - field_name: SSIE
+        val_out = val_in & 0x0
+    - field_name: SSIP
       description: >
         Supervisor-mode software interrupt
       type: WARL
@@ -1385,7 +2359,7 @@
       msb: 1
       lsb: 1
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL1
       description: >
         Reserved [2]
@@ -1394,8 +2368,8 @@
       msb: 2
       lsb: 2
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
-    - field_name: MSIE
+        val_out = val_in & 0x0
+    - field_name: MSIP
       description: >
         Machine-mode software interrupt
       type: WARL
@@ -1403,7 +2377,7 @@
       msb: 3
       lsb: 3
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL2
       description: >
         Reserved [4]
@@ -1412,8 +2386,8 @@
       msb: 4
       lsb: 4
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
-    - field_name: STIE
+        val_out = val_in & 0x0
+    - field_name: STIP
       description: >
         Supervisor-mode timer interrupt
       type: WARL
@@ -1421,7 +2395,7 @@
       msb: 5
       lsb: 5
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL3
       description: >
         Reserved [6]
@@ -1430,8 +2404,8 @@
       msb: 6
       lsb: 6
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
-    - field_name: MTIE
+        val_out = val_in & 0x0
+    - field_name: MTIP
       description: >
         Machine-mode timer interrupt
       type: WARL
@@ -1439,7 +2413,7 @@
       msb: 7
       lsb: 7
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL4
       description: >
         Reserved [8]
@@ -1448,8 +2422,8 @@
       msb: 8
       lsb: 8
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
-    - field_name: SEIE
+        val_out = val_in & 0x0
+    - field_name: SEIP
       description: >
         Supervisor-mode external interrupt
       type: WARL
@@ -1457,7 +2431,7 @@
       msb: 9
       lsb: 9
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL5
       description: >
         Reserved [10]
@@ -1466,8 +2440,8 @@
       msb: 10
       lsb: 10
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
-    - field_name: MEIE
+        val_out = val_in & 0x0
+    - field_name: MEIP
       description: >
         Supervisor-mode external interrupt
       type: WARL
@@ -1475,7 +2449,7 @@
       msb: 11
       lsb: 11
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL6
       description: >
         Reserved [31:12]
@@ -1484,7 +2458,7 @@
       msb: 31
       lsb: 12
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
+        val_out = val_in & 0x0
   rv64:
     - field_name: WARL0
       description: >
@@ -1494,8 +2468,8 @@
       msb: 0
       lsb: 0
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
-    - field_name: SSIE
+        val_out = val_in & 0x0
+    - field_name: SSIP
       description: >
         Supervisor-mode software interrupt
       type: WARL
@@ -1503,7 +2477,7 @@
       msb: 1
       lsb: 1
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL1
       description: >
         Reserved [2]
@@ -1512,8 +2486,8 @@
       msb: 2
       lsb: 2
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
-    - field_name: MSIE
+        val_out = val_in & 0x0
+    - field_name: MSIP
       description: >
         Machine-mode software interrupt
       type: WARL
@@ -1521,7 +2495,7 @@
       msb: 3
       lsb: 3
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL2
       description: >
         Reserved [4]
@@ -1530,8 +2504,8 @@
       msb: 4
       lsb: 4
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
-    - field_name: STIE
+        val_out = val_in & 0x0
+    - field_name: STIP
       description: >
         Supervisor-mode timer interrupt
       type: WARL
@@ -1539,7 +2513,7 @@
       msb: 5
       lsb: 5
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL3
       description: >
         Reserved [6]
@@ -1548,8 +2522,8 @@
       msb: 6
       lsb: 6
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
-    - field_name: MTIE
+        val_out = val_in & 0x0
+    - field_name: MTIP
       description: >
         Machine-mode timer interrupt
       type: WARL
@@ -1557,7 +2531,7 @@
       msb: 7
       lsb: 7
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL4
       description: >
         Reserved [8]
@@ -1566,8 +2540,8 @@
       msb: 8
       lsb: 8
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
-    - field_name: SEIE
+        val_out = val_in & 0x0
+    - field_name: SEIP
       description: >
         Supervisor-mode external interrupt
       type: WARL
@@ -1575,7 +2549,7 @@
       msb: 9
       lsb: 9
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL5
       description: >
         Reserved [10]
@@ -1584,8 +2558,8 @@
       msb: 10
       lsb: 10
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0
-    - field_name: MEIE
+        val_out = val_in & 0x0
+    - field_name: MEIP
       description: >
         Supervisor-mode external interrupt
       type: WARL
@@ -1593,7 +2567,7 @@
       msb: 11
       lsb: 11
       warl_legalize: |
-        val_out = (val_in & 0x1) 
+        val_out = val_in & 0x1 
     - field_name: WARL6
       description: >
         Reserved [63:12]
@@ -1602,7 +2576,7 @@
       msb: 63
       lsb: 12
       warl_legalize: |
-        val_out = (val_in & 0x0) | 0x0        
+        val_out = val_in & 0x0        
 
 
 - csr: mtvec
@@ -1649,13 +2623,13 @@
       warl_legalize: |
         val_out = val_in
 
-- csr: mcouteren
+- csr: mcounteren
   description: >
     Machine Counter-Enable Register
   address: 0x306
   privilege_mode: M
   rv32:
-    - field_name: cy
+    - field_name: CY
       description: >
         mcycle access enable
       type: WARL
@@ -1664,7 +2638,7 @@
       lsb: 0
       warl_legalize: |
         val_out = val_in & 0x1
-    - field_name: tm
+    - field_name: TM
       description: >
         mtime access enable
       type: WARL
@@ -1673,7 +2647,7 @@
       lsb: 1
       warl_legalize: |
         val_out = val_in & 0x1
-    - field_name: ir
+    - field_name: IR
       description: >
         minstret access enable
       type: WARL
@@ -1682,7 +2656,7 @@
       lsb: 2
       warl_legalize: |
         val_out = val_in & 0x1
-    - field_name: hpm
+    - field_name: HPM
       description: >
         hardware performance-monitoring counter access enable
       type: R
@@ -1692,7 +2666,7 @@
       warl_legalize: |
         val_out = val_in & 0x0
   rv64:
-    - field_name: cy
+    - field_name: CY
       description: >
         mcycle access enable
       type: WARL
@@ -1701,7 +2675,7 @@
       lsb: 0
       warl_legalize: |
         val_out = val_in & 0x1
-    - field_name: tm
+    - field_name: TM
       description: >
         mtime access enable
       type: WARL
@@ -1710,7 +2684,7 @@
       lsb: 1
       warl_legalize: |
         val_out = val_in & 0x1
-    - field_name: ir
+    - field_name: IR
       description: >
         minstret access enable
       type: WARL
@@ -1719,7 +2693,7 @@
       lsb: 2
       warl_legalize: |
         val_out = val_in & 0x1
-    - field_name: hpm
+    - field_name: HPM
       description: >
         hardware performance-monitoring counter access enable
       type: R
@@ -1762,7 +2736,7 @@
   address: 0x341
   privilege_mode: M
   rv32:
-    - field_name: epc
+    - field_name: EPC
       description: >
         Machine exception program counter
       type: WARL
@@ -1772,7 +2746,7 @@
       warl_legalize: |
         val_out = val_in & 0xFFFFFFFE
   rv64:
-    - field_name: epc
+    - field_name: EPC
       description: >
         Machine exception program counter
       type: WARL
@@ -1788,7 +2762,7 @@
   address: 0x342
   privilege_mode: M
   rv32:
-    - field_name: cause
+    - field_name: CAUSE
       description: >
         trap cause number
       type: WARL
@@ -1807,7 +2781,7 @@
       warl_legalize: |
         val_out = val_in & 0x1
   rv64:
-    - field_name: cause
+    - field_name: CAUSE
       description: >
         trap cause number
       type: WARL
@@ -1832,25 +2806,25 @@
   address: 0x343
   privilege_mode: M
   rv32:
-    - field_name: WARLTest
+    - field_name: TVAL
       description: >
         exception address
       type: WARL
-      reset_val: 0xf
+      reset_val: 0x0
       msb: 31
       lsb: 0
       warl_legalize: |
         val_out = val_in & 0xFFFFFFFF
   rv64:
-    - field_name: WARLTest
+    - field_name: TVAL
       description: >
         exception address
       type: WARL
-      reset_val: 0xf
+      reset_val: 0x0
       msb: 63
       lsb: 0
       warl_legalize: |
-        val_out = val_in & 0xFFFFFFFF
+        val_out = val_in & 0xFFFFFFFFFFFFFFFF
 
 # - csr: mwarlexample
 #   description: >
